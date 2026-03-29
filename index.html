@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>M3A — Painel de Relatórios</title>
+<style>
+  :root {
+    --bg: #f7f6f3;
+    --surface: #ffffff;
+    --border: #e4e2da;
+    --border-strong: #c8c6be;
+    --text: #1a1a18;
+    --text-muted: #6b6a65;
+    --text-faint: #9e9d98;
+    --green-bg: #eaf3de;
+    --green: #3b6d11;
+    --yellow-bg: #faeeda;
+    --yellow: #854f0b;
+    --red-bg: #fcebeb;
+    --red: #a32d2d;
+    --blue-bg: #e6f1fb;
+    --blue: #185fa5;
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .app { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+  }
+
+  .logo { font-size: 18px; font-weight: 600; letter-spacing: -0.3px; }
+  .logo span { color: var(--text-muted); font-weight: 400; }
+
+  .mes-badge {
+    font-size: 12px;
+    padding: 4px 12px;
+    background: var(--blue-bg);
+    color: var(--blue);
+    border-radius: 20px;
+    font-weight: 500;
+  }
+
+  /* CONFIG */
+  .config-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .config-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .config-title { font-size: 13px; font-weight: 500; }
+  .config-toggle { font-size: 12px; color: var(--text-muted); }
+
+  .config-body { margin-top: 1rem; display: none; }
+  .config-body.open { display: block; }
+
+  .config-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .config-full { grid-column: 1 / -1; }
+
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  .field input {
+    font-size: 13px;
+    padding: 7px 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    color: var(--text);
+    transition: border-color 0.15s;
+  }
+  .field input:focus { outline: none; border-color: var(--border-strong); }
+
+  .thresholds {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+  .threshold-item { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+  .threshold-item input {
+    width: 70px;
+    font-size: 13px;
+    padding: 5px 8px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    color: var(--text);
+    text-align: center;
+  }
+  .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .dot-green { background: var(--green); }
+  .dot-yellow { background: #ef9f27; }
+  .dot-red { background: #e24b4a; }
+
+  .btn-row { display: flex; gap: 10px; margin-top: 1rem; align-items: center; }
+
+  .btn {
+    font-size: 13px;
+    padding: 7px 16px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-strong);
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    transition: background 0.1s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .btn:hover { background: var(--bg); }
+  .btn:active { transform: scale(0.98); }
+
+  .btn-primary {
+    background: var(--text);
+    color: #fff;
+    border-color: transparent;
+  }
+  .btn-primary:hover { opacity: 0.85; background: var(--text); }
+  .btn-primary:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+
+  .btn-load {
+    border-color: var(--blue);
+    color: var(--blue);
+  }
+  .btn-load:hover { background: var(--blue-bg); }
+
+  .save-msg { font-size: 12px; color: var(--green); }
+
+  /* TOOLBAR */
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+  }
+
+  .filter-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tab {
+    font-size: 12px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.1s;
+  }
+  .tab:hover { border-color: var(--border-strong); color: var(--text); }
+  .tab.active { background: var(--text); color: #fff; border-color: var(--text); }
+
+  .toolbar-right { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+  .total-badge { font-size: 12px; color: var(--text-muted); }
+
+  /* LEGEND */
+  .legend {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); }
+
+  /* GROUPS */
+  .group-section { margin-bottom: 1.5rem; }
+
+  .group-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0.5rem 0;
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .group-name { font-size: 13px; font-weight: 600; }
+  .group-count { font-size: 12px; color: var(--text-muted); }
+  .group-select-all { font-size: 12px; color: var(--blue); cursor: pointer; margin-left: auto; }
+  .group-select-all:hover { text-decoration: underline; }
+
+  /* CLIENT CARD */
+  .client-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    display: grid;
+    grid-template-columns: 20px 1fr auto auto;
+    gap: 12px;
+    align-items: center;
+    transition: border-color 0.1s, background 0.1s;
+  }
+  .client-card:hover { border-color: var(--border-strong); border-left-color: inherit; }
+  .client-card.green { border-left-color: var(--green); }
+  .client-card.yellow { border-left-color: #ef9f27; }
+  .client-card.red { border-left-color: #e24b4a; }
+  .client-card.no-data { border-left-color: var(--border-strong); opacity: 0.7; }
+
+  .client-name-txt { font-size: 13px; font-weight: 500; }
+
+  .client-metrics {
+    display: flex;
+    gap: 12px;
+    margin-top: 3px;
+    flex-wrap: wrap;
+  }
+
+  .metric { font-size: 11px; color: var(--text-muted); }
+  .metric strong { color: var(--text); font-weight: 500; }
+  .metric.alert-yellow { color: var(--yellow); }
+  .metric.alert-yellow strong { color: var(--yellow); }
+  .metric.alert-red { color: var(--red); }
+  .metric.alert-red strong { color: var(--red); }
+
+  .alerts { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
+  .alert-tag {
+    font-size: 10px;
+    padding: 1px 7px;
+    border-radius: 20px;
+    font-weight: 500;
+  }
+  .alert-tag.yellow { background: var(--yellow-bg); color: var(--yellow); }
+  .alert-tag.red { background: var(--red-bg); color: var(--red); }
+
+  .send-btn {
+    font-size: 12px;
+    padding: 5px 12px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-strong);
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.1s;
+  }
+  .send-btn:hover { background: var(--bg); }
+  .send-btn.sent { border-color: var(--green); color: var(--green); cursor: default; }
+  .send-btn.sending { opacity: 0.5; cursor: wait; }
+  .send-btn.error { border-color: #e24b4a; color: #a32d2d; }
+
+  input[type="checkbox"] { cursor: pointer; width: 15px; height: 15px; accent-color: var(--text); }
+
+  /* EMPTY */
+  .empty { text-align: center; padding: 3rem; color: var(--text-muted); font-size: 13px; }
+
+  /* LOG */
+  .log-area {
+    margin-top: 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    font-size: 12px;
+    font-family: monospace;
+    max-height: 140px;
+    overflow-y: auto;
+    display: none;
+  }
+  .log-area.visible { display: block; }
+  .log-line { line-height: 1.9; }
+  .log-ok { color: var(--green); }
+  .log-err { color: #a32d2d; }
+  .log-info { color: var(--text-muted); }
+
+  /* SEND ALL BAR */
+  .send-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 12px 2rem;
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 100;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
+  }
+  .send-bar.visible { display: flex; }
+  .send-bar-info { font-size: 13px; color: var(--text-muted); }
+  .send-bar-info strong { color: var(--text); }
+
+  @media (max-width: 600px) {
+    .config-grid { grid-template-columns: 1fr; }
+    .client-card { grid-template-columns: 20px 1fr auto; }
+    .send-btn { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <div class="header">
+    <div class="logo">M3A <span>/ Relatórios</span></div>
+    <div class="mes-badge" id="mesBadge">—</div>
+  </div>
+
+  <!-- CONFIG -->
+  <div class="config-card">
+    <div class="config-header" onclick="toggleConfig()">
+      <div class="config-title">⚙ Configuração</div>
+      <div class="config-toggle" id="configToggleLabel">Mostrar</div>
+    </div>
+    <div class="config-body" id="configBody">
+      <div class="config-grid">
+        <div class="field">
+          <label>Monday API Key</label>
+          <input type="password" id="mondayKey" placeholder="eyJhbGci..." />
+        </div>
+        <div class="field">
+          <label>Google Sheets API Key</label>
+          <input type="password" id="sheetsKey" placeholder="AIza..." />
+        </div>
+        <div class="field config-full">
+          <label>Webhook URL (n8n)</label>
+          <input type="text" id="webhookUrl" placeholder="https://seu-n8n.com/webhook/xxxxx" />
+        </div>
+        <div class="field config-full">
+          <label>Google Sheet ID</label>
+          <input type="text" id="sheetId" placeholder="1mBZj2OvtrAnPY2Fw7..." />
+        </div>
+      </div>
+
+      <div style="margin-top:1rem;">
+        <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:8px;">Critérios de alerta</div>
+        <div class="thresholds">
+          <div class="threshold-item">
+            <div class="dot dot-yellow"></div>
+            <span>CPL amarelo acima de R$</span>
+            <input type="number" id="cplYellow" value="20" />
+          </div>
+          <div class="threshold-item">
+            <div class="dot dot-red"></div>
+            <span>CPL vermelho acima de R$</span>
+            <input type="number" id="cplRed" value="40" />
+          </div>
+          <div class="threshold-item">
+            <div class="dot dot-yellow"></div>
+            <span>Taxa conv. mínima</span>
+            <input type="number" id="taxaMin" value="10" />
+            <span>%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn" onclick="salvarConfig()">Salvar</button>
+        <span class="save-msg" id="saveMsg"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <button class="btn btn-load" onclick="carregar()">↻ Carregar clientes</button>
+    <div class="filter-tabs">
+      <div class="tab active" data-filtro="todos" onclick="setFiltro(this)">Todos</div>
+      <div class="tab" data-filtro="green" onclick="setFiltro(this)">🟢 OK</div>
+      <div class="tab" data-filtro="yellow" onclick="setFiltro(this)">🟡 Atenção</div>
+      <div class="tab" data-filtro="red" onclick="setFiltro(this)">🔴 Crítico</div>
+      <div class="tab" data-filtro="no-data" onclick="setFiltro(this)">Sem dados</div>
+    </div>
+    <div class="toolbar-right">
+      <span class="total-badge" id="totalBadge"></span>
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="dot dot-green"></div> CPL ≤ R$<span id="l1">20</span> e taxa ≥ <span id="l2">10</span>% e tem conversões</div>
+    <div class="legend-item"><div class="dot dot-yellow"></div> CPL entre R$<span id="l3">20</span>–<span id="l4">40</span> ou taxa baixa</div>
+    <div class="legend-item"><div class="dot dot-red"></div> CPL > R$<span id="l5">40</span> ou sem conversões</div>
+  </div>
+
+  <div id="mainContent">
+    <div class="empty">Configure e clique em "Carregar clientes"</div>
+  </div>
+
+  <div class="log-area" id="logArea"></div>
+
+</div>
+
+<!-- SEND BAR -->
+<div class="send-bar" id="sendBar">
+  <div class="send-bar-info"><strong id="sendBarCount">0</strong> clientes selecionados</div>
+  <button class="btn btn-primary" id="btnEnviar" onclick="enviarSelecionados()" disabled>Enviar selecionados via n8n</button>
+</div>
+
+<script>
+const BOARD_ID = '3946353259';
+const GRUPOS = {
+  'Ongoing 1':  'novo_grupo66587',
+  'Ongoing 2':  'novo_grupo58184',
+  'Ongoing 3':  'group_mm138tqr',
+  'Críticos':   'group_mkw8h0bc'
+};
+const ABAS_MCC = ['SARDÁ MCC','M3A (1)','M3A (2)','M3A (3)','M3A (4)','M3A (5)','M3A (6)','M3A (7)','M3A (8)','M3A (9)'];
+
+let todosClientes = [];
+let dadosPlanilha = {};
+let filtroAtivo = 'todos';
+
+// ---- CONFIG ----
+function toggleConfig() {
+  const body = document.getElementById('configBody');
+  const label = document.getElementById('configToggleLabel');
+  const open = body.classList.toggle('open');
+  label.textContent = open ? 'Ocultar' : 'Mostrar';
+}
+
+function salvarConfig() {
+  ['mondayKey','sheetsKey','webhookUrl','sheetId','cplYellow','cplRed','taxaMin'].forEach(id => {
+    const v = document.getElementById(id).value;
+    if (v) localStorage.setItem('m3a_' + id, v);
+  });
+  atualizarLegenda();
+  document.getElementById('saveMsg').textContent = 'Salvo!';
+  setTimeout(() => document.getElementById('saveMsg').textContent = '', 2000);
+}
+
+function carregarConfig() {
+  ['mondayKey','sheetsKey','webhookUrl','sheetId','cplYellow','cplRed','taxaMin'].forEach(id => {
+    const v = localStorage.getItem('m3a_' + id);
+    if (v) document.getElementById(id).value = v;
+  });
+  if (!document.getElementById('sheetId').value)
+    document.getElementById('sheetId').value = '1mBZj2OvtrAnPY2Fw7wdV34Vm-pHZUtQFzHVh8UkEOQg';
+  atualizarLegenda();
+}
+
+function atualizarLegenda() {
+  const y = document.getElementById('cplYellow').value || 20;
+  const r = document.getElementById('cplRed').value || 40;
+  const t = document.getElementById('taxaMin').value || 10;
+  document.getElementById('l1').textContent = y;
+  document.getElementById('l2').textContent = t;
+  document.getElementById('l3').textContent = y;
+  document.getElementById('l4').textContent = r;
+  document.getElementById('l5').textContent = r;
+}
+
+function getConf(id) { return document.getElementById(id).value.trim(); }
+
+// ---- LOG ----
+function log(msg, tipo = 'info') {
+  const area = document.getElementById('logArea');
+  area.classList.add('visible');
+  const d = document.createElement('div');
+  d.className = 'log-line log-' + tipo;
+  d.textContent = new Date().toLocaleTimeString('pt-BR') + ' — ' + msg;
+  area.appendChild(d);
+  area.scrollTop = area.scrollHeight;
+}
+
+// ---- MÊS ----
+function getMesAnterior() {
+  const hoje = new Date();
+  const d = new Date(hoje.getFullYear(), hoje.getMonth() - 1, 1);
+  const meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  return meses[d.getMonth()] + ' ' + d.getFullYear();
+}
+
+// ---- STATUS ----
+function calcularStatus(dados) {
+  if (!dados) return 'no-data';
+  const cpl = parseFloat(dados.cplReal) || 0;
+  const taxa = parseFloat(dados.taxaConversao) || 0;
+  const convs = parseInt(dados.conversoes) || 0;
+  const cplY = parseFloat(getConf('cplYellow') || 20);
+  const cplR = parseFloat(getConf('cplRed') || 40);
+  const taxaMin = parseFloat(getConf('taxaMin') || 10);
+
+  if (convs === 0) return 'red';
+  if (cpl > cplR) return 'red';
+  if (cpl > cplY || taxa < taxaMin) return 'yellow';
+  return 'green';
+}
+
+function alertTags(dados, status) {
+  if (!dados || status === 'no-data') return '';
+  const cpl = parseFloat(dados.cplReal) || 0;
+  const taxa = parseFloat(dados.taxaConversao) || 0;
+  const convs = parseInt(dados.conversoes) || 0;
+  const cplY = parseFloat(getConf('cplYellow') || 20);
+  const cplR = parseFloat(getConf('cplRed') || 40);
+  const taxaMin = parseFloat(getConf('taxaMin') || 10);
+  const tags = [];
+  if (convs === 0) tags.push({ cls: 'red', txt: 'Sem conversões' });
+  if (cpl > cplR) tags.push({ cls: 'red', txt: `CPL R$${cpl.toFixed(0)}` });
+  else if (cpl > cplY) tags.push({ cls: 'yellow', txt: `CPL R$${cpl.toFixed(0)}` });
+  if (taxa < taxaMin && convs > 0) tags.push({ cls: 'yellow', txt: `Taxa ${taxa.toFixed(1)}%` });
+  return tags.map(t => `<span class="alert-tag ${t.cls}">${t.txt}</span>`).join('');
+}
+
+// ---- CARREGAR ----
+async function carregar() {
+  const key = getConf('mondayKey');
+  if (!key) { log('Informe a Monday API Key', 'err'); return; }
+
+  log('Carregando clientes do Monday...', 'info');
+  document.getElementById('mainContent').innerHTML = '<div class="empty">Carregando...</div>';
+
+  const groupIds = Object.values(GRUPOS).map(g => `"${g}"`).join(',');
+  const query = `{
+    boards(ids:[${BOARD_ID}]){
+      groups(ids:[${groupIds}]){
+        id title
+        items_page(limit:200){
+          items{
+            id name group{id}
+            column_values(ids:["text_mksnmx8j","phone_mkxsskj6","link5"]){
+              id text
+            }
+          }
+        }
+      }
+    }
+  }`;
+
+  try {
+    const res = await fetch('https://api.monday.com/v2', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': key, 'API-Version': '2024-01' },
+      body: JSON.stringify({ query })
+    });
+    const data = await res.json();
+    if (data.errors) throw new Error(data.errors[0].message);
+
+    todosClientes = [];
+    const grupos = data?.data?.boards?.[0]?.groups || [];
+    grupos.forEach(g => {
+      const nomeGrupo = Object.keys(GRUPOS).find(k => GRUPOS[k] === g.id) || g.title;
+      (g.items_page?.items || []).forEach(item => {
+        todosClientes.push({
+          id: item.id,
+          nome: item.name,
+          groupId: g.id,
+          groupNome: nomeGrupo,
+          adsId: item.column_values.find(c => c.id === 'text_mksnmx8j')?.text || '',
+          phone: item.column_values.find(c => c.id === 'phone_mkxsskj6')?.text || '',
+          looker: item.column_values.find(c => c.id === 'link5')?.text || '',
+          status: 'pendente'
+        });
+      });
+    });
+
+    log(`${todosClientes.length} clientes carregados`, 'ok');
+
+    const sheetId = getConf('sheetId');
+    const sheetsKey = getConf('sheetsKey');
+    if (sheetId && sheetsKey) {
+      await carregarPlanilha(sheetId, sheetsKey);
+    } else {
+      log('Sheets não configurado — sem dados de performance', 'info');
+    }
+
+    const mes = getMesAnterior();
+    document.getElementById('mesBadge').textContent = mes;
+    renderTudo();
+
+  } catch(e) {
+    log('Erro Monday: ' + e.message, 'err');
+    document.getElementById('mainContent').innerHTML = '<div class="empty">Erro ao carregar. Verifique a API Key.</div>';
+  }
+}
+
+async function carregarPlanilha(sheetId, sheetsKey) {
+  const mes = getMesAnterior();
+  log('Carregando dados do Sheets para ' + mes + '...', 'info');
+  dadosPlanilha = {};
+
+  for (const aba of ABAS_MCC) {
+    try {
+      const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(aba)}!A:L?key=${sheetsKey}`;
+      const res = await fetch(url);
+      if (!res.ok) continue;
+      const data = await res.json();
+      const rows = data.values || [];
+      rows.slice(1).forEach(row => {
+        if (!(row[0] || '').includes(mes.split(' ')[0])) return;
+        const id = (row[2] || '').replace(/-/g, '');
+        if (!id) return;
+        dadosPlanilha[id] = {
+          mes: row[0], investimento: row[3], impressoes: row[4],
+          cliques: row[5], cpcMedio: row[6], conversoes: row[7],
+          ligacoes: row[8], taxaConversao: row[9], cplGoogle: row[10], cplReal: row[11]
+        };
+      });
+    } catch(e) {}
+  }
+
+  const total = Object.keys(dadosPlanilha).length;
+  log(`Dados Sheets: ${total} contas encontradas`, 'ok');
+}
+
+// ---- RENDER ----
+function setFiltro(el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  filtroAtivo = el.dataset.filtro;
+  renderTudo();
+}
+
+function renderTudo() {
+  if (!todosClientes.length) return;
+
+  // Enriquecer com status
+  const clientes = todosClientes.map(c => {
+    const adsIdClean = (c.adsId || '').replace(/-/g, '');
+    const dados = adsIdClean ? dadosPlanilha[adsIdClean] : null;
+    const status = calcularStatus(dados);
+    return { ...c, dados, statusAlerta: status };
+  });
+
+  // Filtrar
+  const filtrados = filtroAtivo === 'todos'
+    ? clientes
+    : clientes.filter(c => c.statusAlerta === filtroAtivo);
+
+  document.getElementById('totalBadge').textContent = filtrados.length + ' clientes';
+
+  if (!filtrados.length) {
+    document.getElementById('mainContent').innerHTML = '<div class="empty">Nenhum cliente neste filtro</div>';
+    atualizarBarraEnvio();
+    return;
+  }
+
+  // Agrupar por grupo
+  const grupos = {};
+  filtrados.forEach(c => {
+    if (!grupos[c.groupNome]) grupos[c.groupNome] = [];
+    grupos[c.groupNome].push(c);
+  });
+
+  // Ordenar grupos: Ongoing 1, 2, 3, Críticos
+  const ordemGrupos = ['Ongoing 1', 'Ongoing 2', 'Ongoing 3', 'Críticos'];
+  const gruposOrdenados = ordemGrupos.filter(g => grupos[g]);
+
+  let html = '';
+  gruposOrdenados.forEach(nomeGrupo => {
+    const lista = grupos[nomeGrupo];
+    html += `
+      <div class="group-section">
+        <div class="group-header">
+          <div class="group-name">${nomeGrupo}</div>
+          <div class="group-count">${lista.length} cliente${lista.length !== 1 ? 's' : ''}</div>
+          <div class="group-select-all" onclick="selecionarGrupo('${nomeGrupo}')">Selecionar todos</div>
+        </div>
+    `;
+
+    lista.forEach((c, i) => {
+      const globalIdx = todosClientes.findIndex(x => x.id === c.id);
+      const d = c.dados;
+      const sa = c.statusAlerta;
+
+      const metricsHtml = d ? `
+        <div class="client-metrics">
+          <span class="metric">Invest. <strong>R$${parseFloat(d.investimento||0).toFixed(0)}</strong></span>
+          <span class="metric">Cliques <strong>${d.cliques||0}</strong></span>
+          <span class="metric ${sa === 'red' && parseInt(d.conversoes||0) === 0 ? 'alert-red' : ''}">Conversões <strong>${d.conversoes||0}</strong></span>
+          <span class="metric">Lig. <strong>${d.ligacoes||0}</strong></span>
+          <span class="metric ${sa !== 'green' && parseFloat(d.cplReal||0) > parseFloat(getConf('cplYellow')||20) ? (sa === 'red' ? 'alert-red' : 'alert-yellow') : ''}">CPL Real <strong>R$${parseFloat(d.cplReal||0).toFixed(0)}</strong></span>
+          <span class="metric ${sa !== 'green' && parseFloat(d.taxaConversao||0) < parseFloat(getConf('taxaMin')||10) ? 'alert-yellow' : ''}">Taxa conv. <strong>${parseFloat(d.taxaConversao||0).toFixed(1)}%</strong></span>
+        </div>
+        <div class="alerts">${alertTags(d, sa)}</div>
+      ` : `<div class="client-metrics"><span class="metric" style="color:var(--text-faint)">Sem dados na planilha</span></div>`;
+
+      const sendClass = c.status === 'enviado' ? 'sent' : c.status === 'erro' ? 'error' : '';
+      const sendTxt = c.status === 'enviado' ? '✓ Enviado' : c.status === 'erro' ? '! Erro' : 'Enviar';
+
+      html += `
+        <div class="client-card ${sa}" id="card_${c.id}">
+          <div><input type="checkbox" class="client-check" data-id="${c.id}" onchange="atualizarBarraEnvio()" /></div>
+          <div>
+            <div class="client-name-txt">${c.nome}</div>
+            ${metricsHtml}
+          </div>
+          <div style="font-size:11px;color:var(--text-faint);text-align:right;">${c.adsId || '—'}</div>
+          <div>
+            <button class="send-btn ${sendClass}" id="sbtn_${c.id}" onclick="enviarUm('${c.id}')">${sendTxt}</button>
+          </div>
+        </div>
+      `;
+    });
+
+    html += `</div>`;
+  });
+
+  document.getElementById('mainContent').innerHTML = html;
+  atualizarBarraEnvio();
+}
+
+function selecionarGrupo(nomeGrupo) {
+  const ids = todosClientes.filter(c => c.groupNome === nomeGrupo).map(c => c.id);
+  document.querySelectorAll('.client-check').forEach(cb => {
+    if (ids.includes(cb.dataset.id)) cb.checked = true;
+  });
+  atualizarBarraEnvio();
+}
+
+function atualizarBarraEnvio() {
+  const checks = document.querySelectorAll('.client-check:checked');
+  const n = checks.length;
+  const bar = document.getElementById('sendBar');
+  const btn = document.getElementById('btnEnviar');
+  bar.classList.toggle('visible', n > 0);
+  document.getElementById('sendBarCount').textContent = n;
+  btn.disabled = n === 0;
+  btn.textContent = n > 0 ? `Enviar ${n} via n8n` : 'Enviar selecionados via n8n';
+}
+
+// ---- ENVIO ----
+async function enviarUm(clienteId) {
+  const webhookUrl = getConf('webhookUrl');
+  if (!webhookUrl) { log('Informe a URL do webhook do n8n', 'err'); return; }
+
+  const cliente = todosClientes.find(c => c.id === clienteId);
+  if (!cliente) return;
+
+  const btn = document.getElementById('sbtn_' + clienteId);
+  if (btn) { btn.textContent = '...'; btn.className = 'send-btn sending'; }
+
+  const adsIdClean = (cliente.adsId || '').replace(/-/g, '');
+  const dados = dadosPlanilha[adsIdClean] || {};
+
+  const payload = {
+    cliente_id: cliente.id,
+    nome: cliente.nome,
+    telefone: (cliente.phone || '').replace(/\D/g, ''),
+    ads_id: cliente.adsId,
+    grupo: cliente.groupNome,
+    link_looker: cliente.looker,
+    mes: getMesAnterior(),
+    investimento: dados.investimento || '',
+    impressoes: dados.impressoes || '',
+    cliques: dados.cliques || '',
+    cpc_medio: dados.cpcMedio || '',
+    conversoes: dados.conversoes || '',
+    ligacoes: dados.ligacoes || '',
+    taxa_conversao: dados.taxaConversao || '',
+    cpl_google: dados.cplGoogle || '',
+    cpl_real: dados.cplReal || ''
+  };
+
+  try {
+    await fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    cliente.status = 'enviado';
+    if (btn) { btn.textContent = '✓ Enviado'; btn.className = 'send-btn sent'; }
+    log('Webhook disparado: ' + cliente.nome, 'ok');
+  } catch(e) {
+    cliente.status = 'erro';
+    if (btn) { btn.textContent = '! Erro'; btn.className = 'send-btn error'; }
+    log('Erro webhook ' + cliente.nome + ': ' + e.message, 'err');
+  }
+}
+
+async function enviarSelecionados() {
+  const checks = document.querySelectorAll('.client-check:checked');
+  document.getElementById('btnEnviar').disabled = true;
+  for (const cb of checks) {
+    await enviarUm(cb.dataset.id);
+    await new Promise(r => setTimeout(r, 600));
+  }
+  document.getElementById('btnEnviar').disabled = false;
+  atualizarBarraEnvio();
+}
+
+carregarConfig();
+document.getElementById('mesBadge').textContent = getMesAnterior();
+</script>
+</body>
+</html>

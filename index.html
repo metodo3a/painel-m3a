@@ -784,10 +784,12 @@ async function carregar() {
     log(`${clientes.length} clientes carregados com sucesso`, 'ok');
     const sheetId = getConf('sheetId');
     const sheetsKey = getConf('sheetsKey');
+    log(`Sheet ID: ${sheetId ? sheetId.substring(0,10)+'...' : 'VAZIO'}`, 'info');
+    log(`Sheets Key: ${sheetsKey ? sheetsKey.substring(0,8)+'...' : 'VAZIO'}`, 'info');
     if (sheetId && sheetsKey) {
       await carregarPlanilha(sheetId, sheetsKey, getMesSelecionado());
     } else {
-      log('Sheets não configurado — sem dados de performance', 'info');
+      log('Sheets não configurado — preencha e salve a configuração', 'err');
     }
     renderTudo();
   } catch(e) {

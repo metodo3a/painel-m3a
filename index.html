@@ -871,11 +871,11 @@ function renderTudo() {
         const convCls = convs === 0 ? 'crit' : '';
         return `
           <div class="client-metrics">
-            <span class="metric">Invest. <strong>R$${parseFloat(d.investimento||0).toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:0})}</strong></span>
+            <span class="metric">Invest. <strong>R$${parseFloat(d.investimento||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}</strong></span>
             <span class="metric">Cliques <strong>${parseInt(d.cliques||0).toLocaleString('pt-BR')}</strong></span>
             <span class="metric ${convCls}">Conv. <strong>${d.conversoes||0}</strong></span>
             <span class="metric">Lig. <strong>${d.ligacoes||0}</strong></span>
-            <span class="metric ${cplCls}">CPL Real <strong>R$${parseFloat(d.cplReal||0).toFixed(0)}</strong></span>
+            <span class="metric ${cplCls}">CPL Real <strong>R$${parseFloat(d.cplReal||0).toFixed(2)}</strong></span>
             <span class="metric ${taxaCls}">Taxa <strong>${parseFloat(d.taxaConversao||0).toFixed(1)}%</strong></span>
           </div>
           <div class="alerts">${alertTags(d, sa)}</div>

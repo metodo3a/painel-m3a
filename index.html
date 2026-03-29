@@ -538,6 +538,48 @@ function getMesAnterior() {
   return MESES_PT[d.getMonth()] + ' ' + d.getFullYear();
 }
 
+
+async function carregarPlanilha(sheetId, sheetsKey, mes) {
+  log('Buscando dados do Sheets para ' + mes + '...', 'info');
+  dadosPlanilha = {};
+
+  for (const aba of ABAS_MCC) {
+    try {
+      const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(aba)}!A:L?key=${sheetsKey}`;
+      const res = await fetch(url);
+      if (!res.ok) {
+        log(`Aba "${aba}": HTTP ${res.status}`, 'err');
+        continue;
+      }
+      const data = await res.json();
+      if (data.error) {
+        log(`Aba "${aba}": ${data.error.message}`, 'err');
+        continue;
+      }
+      const rows = data.values || [];
+      let encontrados = 0;
+      rows.slice(1).forEach(row => {
+        if (!(row[0] || '').toLowerCase().includes(mes.split(' ')[0].toLowerCase())) return;
+        const id = (row[2] || '').replace(/-/g, '');
+        if (!id) return;
+        dadosPlanilha[id] = {
+          mes: row[0], investimento: row[3], impressoes: row[4],
+          cliques: row[5], cpcMedio: row[6], conversoes: row[7],
+          ligacoes: row[8], taxaConversao: row[9], cplGoogle: row[10], cplReal: row[11]
+        };
+        encontrados++;
+      });
+      if (encontrados > 0) log(`Aba "${aba}": ${encontrados} registros encontrados`, 'ok');
+      else log(`Aba "${aba}": ${rows.length-1} linhas, nenhuma para "${mes}"`, 'info');
+    } catch(e) {
+      log(`Aba "${aba}": erro — ${e.message}`, 'err');
+    }
+  }
+
+  const total = Object.keys(dadosPlanilha).length;
+  log(`Total: ${total} contas com dados para ${mes}`, total > 0 ? 'ok' : 'err');
+}
+
 function calcStatus(dados) {
   if (!dados) return 'no-data';
   const cpl = parseFloat(dados.cplReal) || 0;
@@ -740,6 +782,13 @@ async function carregar() {
     }
 
     log(`${clientes.length} clientes carregados com sucesso`, 'ok');
+    const sheetId = getConf('sheetId');
+    const sheetsKey = getConf('sheetsKey');
+    if (sheetId && sheetsKey) {
+      await carregarPlanilha(sheetId, sheetsKey, getMesSelecionado());
+    } else {
+      log('Sheets não configurado — sem dados de performance', 'info');
+    }
     renderTudo();
   } catch(e) {
     log('ERRO: ' + e.message, 'err');

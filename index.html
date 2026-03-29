@@ -262,6 +262,28 @@
   }
   .mes-selector select:focus { outline: none; }
 
+  .secao-titulo {
+    font-size: 12px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--text-muted);
+    padding: 0.5rem 0; margin: 1.5rem 0 0.75rem;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .secao-titulo .count { font-weight: 400; opacity: 0.7; }
+  .client-card.enviado {
+    opacity: 0.5; filter: grayscale(0.3);
+    border-left-color: var(--border-strong) !important;
+    background: var(--bg) !important;
+  }
+  .client-card.enviado .client-name-txt { color: var(--text-muted); }
+  .btn-refresh {
+    font-size: 12px; padding: 5px 12px; border-radius: var(--radius-sm);
+    border: 1px solid var(--border-strong); background: transparent;
+    color: var(--text-muted); cursor: pointer; transition: all 0.1s;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .btn-refresh:hover { background: var(--bg); color: var(--text); }
+
   @media(max-width:600px){
     .config-grid { grid-template-columns: 1fr; }
     .ads-id { display: none; }
@@ -341,7 +363,8 @@
       <div class="tab" data-f="red" onclick="setFiltro(this)">🔴 Crítico</div>
       <div class="tab" data-f="no-data" onclick="setFiltro(this)">Sem dados</div>
     </div>
-    <div class="toolbar-right">
+    <div class="toolbar-right" style="display:flex;align-items:center;gap:10px;">
+      <button class="btn-refresh" onclick="carregar()">↻ Atualizar</button>
       <span class="total-badge" id="totalBadge"></span>
     </div>
   </div>
@@ -672,15 +695,32 @@ function renderTudo() {
   }
 
   const ordem = ['Ongoing 1','Ongoing 2','Ongoing 3','Críticos'];
-  const grupos = {};
-  filtrados.forEach(c => {
-    if (!grupos[c.groupNome]) grupos[c.groupNome] = { cls: c.groupCls, itens: [] };
-    grupos[c.groupNome].itens.push(c);
+
+  // Separar pendentes e enviados
+  const pendentes = filtrados.filter(c => !c.relatorioEnviado);
+  const enviados = filtrados.filter(c => c.relatorioEnviado);
+
+  const gruposPendentes = {};
+  pendentes.forEach(c => {
+    if (!gruposPendentes[c.groupNome]) gruposPendentes[c.groupNome] = { cls: c.groupCls, itens: [] };
+    gruposPendentes[c.groupNome].itens.push(c);
+  });
+
+  const gruposEnviados = {};
+  enviados.forEach(c => {
+    if (!gruposEnviados[c.groupNome]) gruposEnviados[c.groupNome] = { cls: c.groupCls, itens: [] };
+    gruposEnviados[c.groupNome].itens.push(c);
   });
 
   let html = '';
-  ordem.filter(g => grupos[g]).forEach(nomeGrupo => {
-    const { cls, itens } = grupos[nomeGrupo];
+
+  // Seção A Enviar
+  if (pendentes.length > 0) {
+    html += `<div class="secao-titulo">A enviar <span class="count">${pendentes.length} clientes</span></div>`;
+  }
+
+  ordem.filter(g => gruposPendentes[g]).forEach(nomeGrupo => {
+    const { cls, itens } = gruposPendentes[nomeGrupo];
     const safeKey = nomeGrupo.replace(/\s/g,'_');
     const aberto = gruposAbertos[nomeGrupo] !== false;
 
@@ -741,6 +781,36 @@ function renderTudo() {
     html += `</div></div>`;
   });
 
+  // Seção Já Enviados
+  if (enviados.length > 0) {
+    html += `<div class="secao-titulo" style="margin-top:2rem;">Já enviados <span class="count">${enviados.length} clientes</span></div>`;
+    ordem.filter(g => gruposEnviados[g]).forEach(nomeGrupo => {
+      const { cls, itens } = gruposEnviados[nomeGrupo];
+      const safeKey = 'env_' + nomeGrupo.replace(/\s/g,'_');
+      const aberto = gruposAbertos[safeKey] !== false;
+      html += `
+        <div class="grupo-accordion">
+          <div class="grupo-header ${cls} ${aberto ? '' : 'collapsed'}" id="gheader_${safeKey}" onclick="toggleGrupo('${safeKey}')">
+            <span class="grupo-arrow ${aberto ? 'open' : ''}" id="garrow_${safeKey}">▶</span>
+            <span class="grupo-nome">${nomeGrupo}</span>
+            <span class="grupo-count">${itens.length} enviado${itens.length !== 1 ? 's' : ''}</span>
+          </div>
+          <div class="grupo-body ${aberto ? '' : 'collapsed'}" id="gbody_${safeKey}">
+      `;
+      itens.forEach(c => {
+        html += `
+          <div class="client-card enviado">
+            <div></div>
+            <div><div class="client-name-txt">${c.nome}</div></div>
+            <div class="ads-id">${c.adsId || '—'}</div>
+            <div><button class="send-btn sent" disabled>✓ Enviado</button></div>
+          </div>
+        `;
+      });
+      html += `</div></div>`;
+    });
+  }
+
   document.getElementById('mainContent').innerHTML = html;
   atualizarBarra();
 }
@@ -751,7 +821,7 @@ async function carregar() {
 
   log('Carregando clientes do Monday...', 'info');
   const groupIds = GRUPOS_CONFIG.map(g => `"${g.id}"`).join(',');
-  const query = `{boards(ids:[${BOARD_ID}]){groups(ids:[${groupIds}]){id title items_page(limit:200){items{id name group{id} column_values(ids:["text_mksnmx8j","phone_mkxsskj6","link5"]){id text}}}}}}`;
+  const query = `{boards(ids:[${BOARD_ID}]){groups(ids:[${groupIds}]){id title items_page(limit:200){items{id name group{id} column_values(ids:["text_mksnmx8j","phone_mkxsskj6","link5","status_14__1"]){id text}}}}}}`;
 
   try {
     log('Chamando Monday API...', 'info');
@@ -779,6 +849,7 @@ async function carregar() {
           adsId: item.column_values.find(c => c.id==='text_mksnmx8j')?.text || '',
           phone: item.column_values.find(c => c.id==='phone_mkxsskj6')?.text || '',
           looker: item.column_values.find(c => c.id==='link5')?.text || '',
+          relatorioEnviado: !!(item.column_values.find(c => c.id==='status_14__1')?.text),
           status: 'pendente', dados: null
         });
       });
@@ -830,9 +901,22 @@ async function enviarUm(clienteId) {
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify(payload)
     });
+
+    // Marca como enviado no Monday
+    const mondayKey = getConf('mondayKey');
+    if (mondayKey) {
+      const mutation = `mutation { change_column_value(board_id: ${BOARD_ID}, item_id: ${c.id}, column_id: "status_14__1", value: "{\"label\": \"Enviado\"}") { id } }`;
+      await fetch('https://api.monday.com/v2', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': mondayKey, 'API-Version': '2024-01' },
+        body: JSON.stringify({ query: mutation })
+      });
+    }
+
+    c.relatorioEnviado = true;
     c.status = 'enviado';
-    if (btn) { btn.textContent = '✓ Enviado'; btn.className = 'send-btn sent'; }
     log('Enviado: ' + c.nome, 'ok');
+    renderTudo();
   } catch(e) {
     c.status = 'erro';
     if (btn) { btn.textContent = '! Erro'; btn.className = 'send-btn error'; }

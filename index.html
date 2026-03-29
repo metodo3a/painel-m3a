@@ -578,6 +578,9 @@ async function carregarPlanilha(sheetId, sheetsKey, mes) {
 
   const total = Object.keys(dadosPlanilha).length;
   log(`Total: ${total} contas com dados para ${mes}`, total > 0 ? 'ok' : 'err');
+  // Mostra os primeiros 3 IDs da planilha para debug
+  const amostra = Object.keys(dadosPlanilha).slice(0, 3);
+  log(`Amostra IDs planilha: ${amostra.join(', ')}`, 'info');
 }
 
 function calcStatus(dados) {

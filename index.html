@@ -715,6 +715,11 @@ async function carregarPlanilha(sheetId, sheetsKey, mes) {
   log(`Amostra IDs planilha: ${amostra.join(', ')}`, 'info');
 }
 
+function parseNum(val) {
+  if (!val && val !== 0) return 0;
+  return parseFloat(String(val).replace(',', '.')) || 0;
+}
+
 function calcStatus(dados) {
   if (!dados) return 'no-data';
   const cpl = parseFloat(dados.cplReal) || 0;
@@ -863,20 +868,20 @@ function renderTudo() {
       const taxaMin = parseFloat(getConf('taxaMin') || 10);
 
       const metricsHtml = d ? (() => {
-        const cpl = parseFloat(d.cplReal) || 0;
-        const taxa = parseFloat(d.taxaConversao) || 0;
+        const cpl = parseNum(d.cplReal) || 0;
+        const taxa = parseNum(d.taxaConversao) || 0;
         const convs = parseInt(d.conversoes) || 0;
         const cplCls = cpl > cplR ? 'crit' : cpl > cplY ? 'warn' : '';
         const taxaCls = taxa < taxaMin && convs > 0 ? 'warn' : '';
         const convCls = convs === 0 ? 'crit' : '';
         return `
           <div class="client-metrics">
-            <span class="metric">Invest. <strong>R$${parseFloat(d.investimento||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}</strong></span>
-            <span class="metric">Cliques <strong>${parseInt(d.cliques||0).toLocaleString('pt-BR')}</strong></span>
+            <span class="metric">Invest. <strong>R$${parseNum(d.investimento).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}</strong></span>
+            <span class="metric">Cliques <strong>${Math.round(parseNum(d.cliques)).toLocaleString('pt-BR')}</strong></span>
             <span class="metric ${convCls}">Conv. <strong>${d.conversoes||0}</strong></span>
             <span class="metric">Lig. <strong>${d.ligacoes||0}</strong></span>
-            <span class="metric ${cplCls}">CPL Real <strong>R$${parseFloat(d.cplReal||0).toFixed(2)}</strong></span>
-            <span class="metric ${taxaCls}">Taxa <strong>${parseFloat(d.taxaConversao||0).toFixed(1)}%</strong></span>
+            <span class="metric ${cplCls}">CPL Real <strong>R$${parseNum(d.cplReal).toFixed(2)}</strong></span>
+            <span class="metric ${taxaCls}">Taxa <strong>${parseNum(d.taxaConversao).toFixed(1)}%</strong></span>
           </div>
           <div class="alerts">${alertTags(d, sa)}</div>
         `;

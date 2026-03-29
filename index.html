@@ -881,7 +881,7 @@ async function carregar() {
 
   log('Carregando clientes do Monday...', 'info');
   const groupIds = GRUPOS_CONFIG.map(g => `"${g.id}"`).join(',');
-  const query = `{boards(ids:[${BOARD_ID}]){groups(ids:[${groupIds}]){id title items_page(limit:200){items{id name group{id} column_values(ids:["text_mksnmx8j","phone_mkxsskj6","link5","status_14__1"]){id text}}}}}}`;
+  const query = `{boards(ids:[${BOARD_ID}]){groups(ids:[${groupIds}]){id title items_page(limit:200){items{id name group{id} column_values(ids:["text_mksnmx8j","phone_mkxsskj6","link5","status_14__1","status_12"]){id text}}}}}}`;
 
   try {
     log('Chamando Monday API...', 'info');
@@ -910,10 +910,17 @@ async function carregar() {
           phone: item.column_values.find(c => c.id==='phone_mkxsskj6')?.text || '',
           looker: item.column_values.find(c => c.id==='link5')?.text || '',
           relatorioEnviado: (item.column_values.find(c => c.id==='status_14__1')?.text || '').toLowerCase().includes('feito'),
+          mcc: item.column_values.find(c => c.id==='status_12')?.text || '',
           status: 'pendente', dados: null
         });
       });
     });
+
+    const MCC_EXCLUIDOS = ['Meta', 'Super Combo BF 25'];
+    const totalAntes = clientes.length;
+    clientes = clientes.filter(c => !MCC_EXCLUIDOS.includes(c.mcc));
+    const excluidos = totalAntes - clientes.length;
+    if (excluidos > 0) log(`${excluidos} clientes excluídos por MCC (Meta / Super Combo BF 25)`, 'info');
 
     if (clientes.length === 0) {
       log('Nenhum cliente retornado — verifique os IDs dos grupos', 'err');

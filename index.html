@@ -653,7 +653,12 @@ function atualizarBarra() {
 }
 
 function renderTudo() {
-  const enriched = clientes.map(c => ({ ...c, statusAlerta: calcStatus(c.dados) }));
+  // Associa dados da planilha a cada cliente pelo adsId
+  const enriched = clientes.map(c => {
+    const adsIdClean = (c.adsId || '').replace(/-/g, '');
+    const dados = adsIdClean ? dadosPlanilha[adsIdClean] : null;
+    return { ...c, dados, statusAlerta: calcStatus(dados) };
+  });
   const busca = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
   const porFiltro = filtroAtivo === 'todos' ? enriched : enriched.filter(c => c.statusAlerta === filtroAtivo);
   const filtrados = busca ? porFiltro.filter(c => c.nome.toLowerCase().includes(busca)) : porFiltro;

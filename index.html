@@ -1066,11 +1066,12 @@ async function enviarUm(clienteId) {
     // Marca como enviado no Monday
     const mondayKey = getConf('mondayKey');
     if (mondayKey) {
-      const mutation = `mutation { change_column_value(board_id: ${BOARD_ID}, item_id: ${c.id}, column_id: "status_14__1", value: "{\"label\": \"Feito\"}") { id } }`;
       await fetch('https://api.monday.com/v2', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': mondayKey, 'API-Version': '2024-01' },
-        body: JSON.stringify({ query: mutation })
+        body: JSON.stringify({
+          query: `mutation { change_column_value(board_id: ${BOARD_ID}, item_id: ${c.id}, column_id: "status_14__1", value: "{\"label\": \"Feito\"}") { id } }`
+        })
       });
     }
 
@@ -1113,11 +1114,12 @@ async function marcarNaoEnviar(clienteId, label, e) {
   if (!mondayKey) { log('Sem Monday API Key', 'err'); return; }
 
   try {
-    const mutation = `mutation { change_column_value(board_id: ${BOARD_ID}, item_id: ${clienteId}, column_id: "status_14__1", value: "{\"label\": \"${label}\"}") { id } }`;
     await fetch('https://api.monday.com/v2', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': mondayKey, 'API-Version': '2024-01' },
-      body: JSON.stringify({ query: mutation })
+      body: JSON.stringify({
+        query: `mutation { change_column_value(board_id: ${BOARD_ID}, item_id: ${clienteId}, column_id: "status_14__1", value: "{\"label\": \"${label}\"}") { id } }`
+      })
     });
     c.statusRelatorio = label;
     c.relatorioEnviado = false;
@@ -1136,11 +1138,12 @@ async function desfazerNaoEnviar(clienteId) {
   if (!mondayKey) { log('Sem Monday API Key', 'err'); return; }
 
   try {
-    const mutation = `mutation { change_column_value(board_id: ${BOARD_ID}, item_id: ${clienteId}, column_id: "status_14__1", value: "{\"label\": \"\"}") { id } }`;
     await fetch('https://api.monday.com/v2', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': mondayKey, 'API-Version': '2024-01' },
-      body: JSON.stringify({ query: mutation })
+      body: JSON.stringify({
+        query: `mutation { change_column_value(board_id: ${BOARD_ID}, item_id: ${clienteId}, column_id: "status_14__1", value: "{\"label\": \"\"}") { id } }`
+      })
     });
     c.statusRelatorio = '';
     c.relatorioEnviado = false;

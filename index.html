@@ -1005,7 +1005,7 @@ async function carregar() {
 
   log('Carregando clientes do Monday...', 'info');
   const groupIds = GRUPOS_CONFIG.map(g => `"${g.id}"`).join(',');
-  const query = `{boards(ids:[${BOARD_ID}]){groups(ids:[${groupIds}]){id title items_page(limit:200){items{id name group{id} column_values(ids:["text_mksnmx8j","phone_mkxsskj6","link5","status_14__1","status_12"]){id text}}}}}}`;
+  const query = `{boards(ids:[${BOARD_ID}]){groups(ids:[${groupIds}]){id title items_page(limit:200){items{id name group{id} column_values(ids:["text_mksnmx8j","telefone_1","dup__of_conversa__1","text_mm12hcha","status_14__1","status_12"]){id text}}}}}}`;
 
   try {
     log('Chamando Monday API...', 'info');
@@ -1031,8 +1031,9 @@ async function carregar() {
           id: item.id, nome: item.name,
           groupNome: cfg.nome, groupCls: cfg.cls,
           adsId: item.column_values.find(c => c.id==='text_mksnmx8j')?.text || '',
-          phone: item.column_values.find(c => c.id==='phone_mkxsskj6')?.text || '',
-          looker: item.column_values.find(c => c.id==='link5')?.text || '',
+          phone: item.column_values.find(c => c.id==='telefone_1')?.text || '',
+          looker: item.column_values.find(c => c.id==='dup__of_conversa__1')?.text || '',
+          dashM3a: item.column_values.find(c => c.id==='text_mm12hcha')?.text || '',
           statusRelatorio: (item.column_values.find(c => c.id==='status_14__1')?.text || ''),
           relatorioEnviado: (item.column_values.find(c => c.id==='status_14__1')?.text || '') === 'Feito',
           mcc: item.column_values.find(c => c.id==='status_12')?.text || '',
@@ -1083,7 +1084,8 @@ async function enviarUm(clienteId) {
     cliente_id: c.id, nome: c.nome,
     telefone: (c.phone||'').replace(/\D/g,''),
     ads_id: c.adsId, grupo: c.groupNome,
-    link_looker: c.looker, mes: getMesSelecionado(),
+    link_looker: c.looker, dash_m3a: c.dashM3a || '',
+    mes: getMesSelecionado(),
     ...(c.dados || {})
   };
 

@@ -288,9 +288,9 @@
   }
   .nao-enviar-btn:hover { background: var(--bg); color: var(--text); }
   .nao-enviar-dropdown {
-    position: absolute; right: 0; top: 110%; z-index: 50;
+    position: fixed; z-index: 9999;
     background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius-sm); box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    border-radius: var(--radius-sm); box-shadow: 0 4px 16px rgba(0,0,0,0.15);
     min-width: 160px; display: none;
   }
   .nao-enviar-dropdown.open { display: block; }
@@ -1087,10 +1087,14 @@ async function enviarUm(clienteId) {
 
 function toggleNaoEnviar(id, e) {
   e.stopPropagation();
-  document.querySelectorAll('.nao-enviar-dropdown').forEach(d => {
-    if (d.id !== 'nedrop_' + id) d.classList.remove('open');
-  });
-  document.getElementById('nedrop_' + id)?.classList.toggle('open');
+  document.querySelectorAll('.nao-enviar-dropdown').forEach(d => d.classList.remove('open'));
+  const drop = document.getElementById('nedrop_' + id);
+  if (!drop) return;
+  const btn = e.currentTarget;
+  const rect = btn.getBoundingClientRect();
+  drop.style.top = (rect.bottom + 4) + 'px';
+  drop.style.left = (rect.right - 160) + 'px';
+  drop.classList.add('open');
 }
 
 // Fechar dropdown ao clicar fora

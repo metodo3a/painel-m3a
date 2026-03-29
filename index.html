@@ -744,8 +744,8 @@ function alertTags(dados, status) {
   const taxaMin = parseFloat(getConf('taxaMin') || 10);
   const tags = [];
   if (convs === 0) tags.push({ cls:'red', txt:'Sem conversões' });
-  if (cpl > cplR) tags.push({ cls:'red', txt:`CPL R$${cpl.toFixed(0)}` });
-  else if (cpl > cplY) tags.push({ cls:'yellow', txt:`CPL R$${cpl.toFixed(0)}` });
+  if (cpl > cplR) tags.push({ cls:'red', txt:`CPL R$${cpl.toFixed(2).replace('.', ',')}` });
+  else if (cpl > cplY) tags.push({ cls:'yellow', txt:`CPL R$${cpl.toFixed(2).replace('.', ',')}` });
   if (taxa < taxaMin && convs > 0) tags.push({ cls:'yellow', txt:`Taxa ${taxa.toFixed(1)}%` });
   return tags.map(t => `<span class="alert-tag ${t.cls}">${t.txt}</span>`).join('');
 }
@@ -880,8 +880,8 @@ function renderTudo() {
             <span class="metric">Cliques <strong>${Math.round(parseNum(d.cliques)).toLocaleString('pt-BR')}</strong></span>
             <span class="metric ${convCls}">Conv. <strong>${d.conversoes||0}</strong></span>
             <span class="metric">Lig. <strong>${d.ligacoes||0}</strong></span>
-            <span class="metric ${cplCls}">CPL Real <strong>R$${parseNum(d.cplReal).toFixed(2)}</strong></span>
-            <span class="metric ${taxaCls}">Taxa <strong>${parseNum(d.taxaConversao).toFixed(1)}%</strong></span>
+            <span class="metric ${cplCls}">CPL Real <strong>R$${parseNum(d.cplReal).toFixed(2).replace('.', ',')}</strong></span>
+            <span class="metric ${taxaCls}">Taxa <strong>${parseNum(d.taxaConversao).toFixed(1).replace('.', ',')}%</strong></span>
           </div>
           <div class="alerts">${alertTags(d, sa)}</div>
         `;

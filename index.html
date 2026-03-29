@@ -1086,7 +1086,10 @@ async function enviarUm(clienteId) {
     ads_id: c.adsId, grupo: c.groupNome,
     link_looker: c.looker, dash_m3a: c.dashM3a || '',
     mes: getMesSelecionado(),
-    ...(c.dados || {})
+    ...(() => {
+      const adsIdClean = (c.adsId || '').replace(/-/g, '');
+      return adsIdClean ? (dadosPlanilha[adsIdClean] || {}) : {};
+    })()
   };
 
   try {

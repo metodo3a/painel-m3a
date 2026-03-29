@@ -6,23 +6,24 @@
 <title>M3A — Painel de Relatórios</title>
 <style>
   :root {
-    --bg: #f7f6f3;
+    --bg: #f5f4f1;
     --surface: #ffffff;
     --border: #e4e2da;
     --border-strong: #c8c6be;
     --text: #1a1a18;
     --text-muted: #6b6a65;
     --text-faint: #9e9d98;
-    --green-bg: #eaf3de;
-    --green: #3b6d11;
-    --yellow-bg: #faeeda;
-    --yellow: #854f0b;
-    --red-bg: #fcebeb;
-    --red: #a32d2d;
-    --blue-bg: #e6f1fb;
-    --blue: #185fa5;
     --radius: 10px;
     --radius-sm: 6px;
+
+    --g1-bg: #e6f1fb; --g1-text: #185fa5; --g1-border: #b5d4f4;
+    --g2-bg: #eaf3de; --g2-text: #3b6d11; --g2-border: #c0dd97;
+    --g3-bg: #eeedfe; --g3-text: #3c3489; --g3-border: #cecdf6;
+    --g4-bg: #faece7; --g4-text: #993c1d; --g4-border: #f5c4b3;
+
+    --green: #3b6d11; --green-bg: #eaf3de; --green-border: #c0dd97;
+    --yellow: #854f0b; --yellow-bg: #faeeda; --yellow-border: #fac775;
+    --red: #a32d2d; --red-bg: #fcebeb; --red-border: #f7c1c1;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -35,25 +36,20 @@
     line-height: 1.5;
   }
 
-  .app { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem; }
+  .app { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem 6rem; }
 
   .header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 2rem;
+    margin-bottom: 1.75rem;
   }
-
   .logo { font-size: 18px; font-weight: 600; letter-spacing: -0.3px; }
   .logo span { color: var(--text-muted); font-weight: 400; }
-
   .mes-badge {
-    font-size: 12px;
-    padding: 4px 12px;
-    background: var(--blue-bg);
-    color: var(--blue);
-    border-radius: 20px;
-    font-weight: 500;
+    font-size: 12px; padding: 4px 12px;
+    background: var(--g1-bg); color: var(--g1-text);
+    border-radius: 20px; font-weight: 500;
   }
 
   /* CONFIG */
@@ -61,278 +57,234 @@
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 1.25rem;
-    margin-bottom: 1.5rem;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.25rem;
   }
-
   .config-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    cursor: pointer;
-    user-select: none;
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer; user-select: none;
   }
-
   .config-title { font-size: 13px; font-weight: 500; }
   .config-toggle { font-size: 12px; color: var(--text-muted); }
-
   .config-body { margin-top: 1rem; display: none; }
   .config-body.open { display: block; }
-
-  .config-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-  }
-
+  .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .config-full { grid-column: 1 / -1; }
-
   .field { display: flex; flex-direction: column; gap: 4px; }
   .field label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
   .field input {
-    font-size: 13px;
-    padding: 7px 10px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    background: var(--bg);
-    color: var(--text);
-    transition: border-color 0.15s;
+    font-size: 13px; padding: 7px 10px; height: 34px;
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--bg); color: var(--text); transition: border-color 0.15s;
   }
   .field input:focus { outline: none; border-color: var(--border-strong); }
 
-  .thresholds {
-    display: flex;
-    gap: 16px;
-    align-items: center;
-    margin-top: 8px;
-    flex-wrap: wrap;
-  }
+  .thresholds { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 8px; }
   .threshold-item { display: flex; align-items: center; gap: 8px; font-size: 12px; }
   .threshold-item input {
-    width: 70px;
-    font-size: 13px;
-    padding: 5px 8px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    background: var(--bg);
-    color: var(--text);
-    text-align: center;
+    width: 65px; font-size: 13px; padding: 5px 8px;
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--bg); color: var(--text); text-align: center;
   }
-  .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
   .dot-green { background: var(--green); }
   .dot-yellow { background: #ef9f27; }
   .dot-red { background: #e24b4a; }
 
   .btn-row { display: flex; gap: 10px; margin-top: 1rem; align-items: center; }
-
   .btn {
-    font-size: 13px;
-    padding: 7px 16px;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--border-strong);
-    background: transparent;
-    color: var(--text);
-    cursor: pointer;
-    transition: background 0.1s;
-    display: flex; align-items: center; gap: 6px;
+    font-size: 13px; padding: 7px 16px;
+    border-radius: var(--radius-sm); border: 1px solid var(--border-strong);
+    background: transparent; color: var(--text); cursor: pointer;
+    transition: background 0.1s; display: flex; align-items: center; gap: 6px;
   }
   .btn:hover { background: var(--bg); }
   .btn:active { transform: scale(0.98); }
-
-  .btn-primary {
-    background: var(--text);
-    color: #fff;
-    border-color: transparent;
-  }
+  .btn-primary { background: var(--text); color: #fff; border-color: transparent; }
   .btn-primary:hover { opacity: 0.85; background: var(--text); }
   .btn-primary:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
-
-  .btn-load {
-    border-color: var(--blue);
-    color: var(--blue);
-  }
-  .btn-load:hover { background: var(--blue-bg); }
-
+  .btn-load { border-color: var(--g1-text); color: var(--g1-text); }
+  .btn-load:hover { background: var(--g1-bg); }
   .save-msg { font-size: 12px; color: var(--green); }
 
   /* TOOLBAR */
-  .toolbar {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 1.25rem;
-    flex-wrap: wrap;
-  }
-
+  .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; flex-wrap: wrap; }
   .filter-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
   .tab {
-    font-size: 12px;
-    padding: 5px 12px;
-    border-radius: 20px;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    color: var(--text-muted);
-    cursor: pointer;
-    transition: all 0.1s;
+    font-size: 12px; padding: 5px 12px; border-radius: 20px;
+    border: 1px solid var(--border); background: var(--surface);
+    color: var(--text-muted); cursor: pointer; transition: all 0.1s;
   }
   .tab:hover { border-color: var(--border-strong); color: var(--text); }
   .tab.active { background: var(--text); color: #fff; border-color: var(--text); }
-
-  .toolbar-right { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+  .toolbar-right { margin-left: auto; }
   .total-badge { font-size: 12px; color: var(--text-muted); }
 
   /* LEGEND */
-  .legend {
-    display: flex;
-    gap: 16px;
-    margin-bottom: 1rem;
-    flex-wrap: wrap;
-  }
+  .legend { display: flex; gap: 16px; margin-bottom: 1.25rem; flex-wrap: wrap; }
   .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); }
 
-  /* GROUPS */
-  .group-section { margin-bottom: 1.5rem; }
+  /* ACCORDION GRUPO */
+  .grupo-accordion { margin-bottom: 10px; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); }
 
-  .group-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 0.5rem 0;
-    margin-bottom: 0.5rem;
-    border-bottom: 1px solid var(--border);
+  .grupo-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 16px; cursor: pointer; user-select: none;
+    transition: opacity 0.1s;
   }
+  .grupo-header:hover { opacity: 0.85; }
 
-  .group-name { font-size: 13px; font-weight: 600; }
-  .group-count { font-size: 12px; color: var(--text-muted); }
-  .group-select-all { font-size: 12px; color: var(--blue); cursor: pointer; margin-left: auto; }
-  .group-select-all:hover { text-decoration: underline; }
+  .grupo-header.g1 { background: var(--g1-bg); border-bottom: 1px solid var(--g1-border); }
+  .grupo-header.g2 { background: var(--g2-bg); border-bottom: 1px solid var(--g2-border); }
+  .grupo-header.g3 { background: var(--g3-bg); border-bottom: 1px solid var(--g3-border); }
+  .grupo-header.g4 { background: var(--g4-bg); border-bottom: 1px solid var(--g4-border); }
+
+  .grupo-header.collapsed { border-bottom: none; }
+
+  .grupo-arrow {
+    font-size: 11px; transition: transform 0.2s; display: inline-block;
+  }
+  .grupo-arrow.open { transform: rotate(90deg); }
+
+  .grupo-nome {
+    font-size: 13px; font-weight: 600;
+  }
+  .g1 .grupo-nome { color: var(--g1-text); }
+  .g2 .grupo-nome { color: var(--g2-text); }
+  .g3 .grupo-nome { color: var(--g3-text); }
+  .g4 .grupo-nome { color: var(--g4-text); }
+
+  .grupo-count { font-size: 12px; opacity: 0.7; }
+  .g1 .grupo-count { color: var(--g1-text); }
+  .g2 .grupo-count { color: var(--g2-text); }
+  .g3 .grupo-count { color: var(--g3-text); }
+  .g4 .grupo-count { color: var(--g4-text); }
+
+  .grupo-sel-all {
+    margin-left: auto; font-size: 12px; opacity: 0.8;
+    cursor: pointer; text-decoration: underline;
+  }
+  .g1 .grupo-sel-all { color: var(--g1-text); }
+  .g2 .grupo-sel-all { color: var(--g2-text); }
+  .g3 .grupo-sel-all { color: var(--g3-text); }
+  .g4 .grupo-sel-all { color: var(--g4-text); }
+
+  .grupo-body { background: var(--surface); display: block; }
+  .grupo-body.collapsed { display: none; }
 
   /* CLIENT CARD */
   .client-card {
     background: var(--surface);
-    border: 1px solid var(--border);
-    border-left: 3px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 10px 14px;
-    margin-bottom: 6px;
     display: grid;
     grid-template-columns: 20px 1fr auto auto;
-    gap: 12px;
-    align-items: center;
-    transition: border-color 0.1s, background 0.1s;
+    gap: 12px; align-items: center;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    border-left: 3px solid transparent;
+    transition: background 0.1s;
   }
-  .client-card:hover { border-color: var(--border-strong); border-left-color: inherit; }
-  .client-card.green { border-left-color: var(--green); }
-  .client-card.yellow { border-left-color: #ef9f27; }
-  .client-card.red { border-left-color: #e24b4a; }
-  .client-card.no-data { border-left-color: var(--border-strong); opacity: 0.7; }
+  .client-card:last-child { border-bottom: none; }
+  .client-card:hover { background: #fafaf8; }
+  .client-card.green { border-left-color: var(--green); background: #f2fae8; }
+  .client-card.yellow { border-left-color: #ef9f27; background: #fdf6e8; }
+  .client-card.red { border-left-color: #e24b4a; background: #fdf0f0; }
+  .client-card.no-data { border-left-color: var(--border-strong); }
 
   .client-name-txt { font-size: 13px; font-weight: 500; }
-
-  .client-metrics {
-    display: flex;
-    gap: 12px;
-    margin-top: 3px;
-    flex-wrap: wrap;
-  }
-
+  .client-metrics { display: flex; gap: 10px; margin-top: 3px; flex-wrap: wrap; }
   .metric { font-size: 11px; color: var(--text-muted); }
   .metric strong { color: var(--text); font-weight: 500; }
-  .metric.alert-yellow { color: var(--yellow); }
-  .metric.alert-yellow strong { color: var(--yellow); }
-  .metric.alert-red { color: var(--red); }
-  .metric.alert-red strong { color: var(--red); }
+  .metric.warn strong { color: var(--yellow); }
+  .metric.crit strong { color: var(--red); }
 
   .alerts { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
   .alert-tag {
-    font-size: 10px;
-    padding: 1px 7px;
-    border-radius: 20px;
-    font-weight: 500;
+    font-size: 10px; padding: 1px 7px;
+    border-radius: 20px; font-weight: 500;
   }
   .alert-tag.yellow { background: var(--yellow-bg); color: var(--yellow); }
   .alert-tag.red { background: var(--red-bg); color: var(--red); }
 
+  .ads-id { font-size: 11px; color: var(--text-faint); text-align: right; min-width: 90px; }
+
   .send-btn {
-    font-size: 12px;
-    padding: 5px 12px;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--border-strong);
-    background: transparent;
-    color: var(--text);
-    cursor: pointer;
-    white-space: nowrap;
-    transition: all 0.1s;
+    font-size: 12px; padding: 5px 12px; border-radius: var(--radius-sm);
+    border: 1px solid var(--border-strong); background: transparent;
+    color: var(--text); cursor: pointer; white-space: nowrap; transition: all 0.1s;
   }
   .send-btn:hover { background: var(--bg); }
   .send-btn.sent { border-color: var(--green); color: var(--green); cursor: default; }
   .send-btn.sending { opacity: 0.5; cursor: wait; }
-  .send-btn.error { border-color: #e24b4a; color: #a32d2d; }
+  .send-btn.error { border-color: #e24b4a; color: var(--red); }
 
   input[type="checkbox"] { cursor: pointer; width: 15px; height: 15px; accent-color: var(--text); }
 
-  /* EMPTY */
   .empty { text-align: center; padding: 3rem; color: var(--text-muted); font-size: 13px; }
 
   /* LOG */
   .log-area {
-    margin-top: 1.5rem;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 10px 14px;
-    font-size: 12px;
-    font-family: monospace;
-    max-height: 140px;
-    overflow-y: auto;
-    display: none;
+    margin-top: 1.5rem; background: var(--surface);
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: 10px 14px; font-size: 12px; font-family: monospace;
+    max-height: 130px; overflow-y: auto; display: none;
   }
   .log-area.visible { display: block; }
   .log-line { line-height: 1.9; }
   .log-ok { color: var(--green); }
-  .log-err { color: #a32d2d; }
+  .log-err { color: var(--red); }
   .log-info { color: var(--text-muted); }
 
-  /* SEND ALL BAR */
+  /* SEND BAR */
   .send-bar {
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    background: var(--surface);
-    border-top: 1px solid var(--border);
-    padding: 12px 2rem;
-    display: none;
-    align-items: center;
-    justify-content: space-between;
-    z-index: 100;
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--surface); border-top: 1px solid var(--border);
+    padding: 12px 2rem; display: none; align-items: center;
+    justify-content: space-between; z-index: 100;
     box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
   }
   .send-bar.visible { display: flex; }
   .send-bar-info { font-size: 13px; color: var(--text-muted); }
   .send-bar-info strong { color: var(--text); }
 
-  @media (max-width: 600px) {
+
+  .mes-selector {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .mes-selector select {
+    font-size: 13px; padding: 5px 10px; height: 32px;
+    border: 1px solid var(--g1-border); border-radius: 20px;
+    background: var(--g1-bg); color: var(--g1-text);
+    cursor: pointer; font-weight: 500;
+    appearance: none; -webkit-appearance: none;
+    padding-right: 28px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23185fa5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 10px center;
+  }
+  .mes-selector select:focus { outline: none; }
+
+  @media(max-width:600px){
     .config-grid { grid-template-columns: 1fr; }
-    .client-card { grid-template-columns: 20px 1fr auto; }
-    .send-btn { display: none; }
+    .ads-id { display: none; }
   }
 </style>
 </head>
 <body>
-
 <div class="app">
 
   <div class="header">
     <div class="logo">M3A <span>/ Relatórios</span></div>
-    <div class="mes-badge" id="mesBadge">—</div>
+    <div class="mes-selector">
+      <select id="mesSeletor" onchange="onMesMudou()"></select>
+    </div>
   </div>
 
   <!-- CONFIG -->
   <div class="config-card">
     <div class="config-header" onclick="toggleConfig()">
       <div class="config-title">⚙ Configuração</div>
-      <div class="config-toggle" id="configToggleLabel">Mostrar</div>
+      <div class="config-toggle" id="cfgLabel">Mostrar</div>
     </div>
-    <div class="config-body" id="configBody">
+    <div class="config-body" id="cfgBody">
       <div class="config-grid">
         <div class="field">
           <label>Monday API Key</label>
@@ -351,31 +303,30 @@
           <input type="text" id="sheetId" placeholder="1mBZj2OvtrAnPY2Fw7..." />
         </div>
       </div>
-
       <div style="margin-top:1rem;">
         <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:8px;">Critérios de alerta</div>
         <div class="thresholds">
           <div class="threshold-item">
             <div class="dot dot-yellow"></div>
             <span>CPL amarelo acima de R$</span>
-            <input type="number" id="cplYellow" value="20" />
+            <input type="number" id="cplYellow" value="20" oninput="atualizarLegenda();renderTudo();" />
           </div>
           <div class="threshold-item">
             <div class="dot dot-red"></div>
             <span>CPL vermelho acima de R$</span>
-            <input type="number" id="cplRed" value="40" />
+            <input type="number" id="cplRed" value="40" oninput="atualizarLegenda();renderTudo();" />
           </div>
           <div class="threshold-item">
             <div class="dot dot-yellow"></div>
             <span>Taxa conv. mínima</span>
-            <input type="number" id="taxaMin" value="10" />
+            <input type="number" id="taxaMin" value="10" oninput="atualizarLegenda();renderTudo();" />
             <span>%</span>
           </div>
         </div>
       </div>
-
       <div class="btn-row">
-        <button class="btn" onclick="salvarConfig()">Salvar</button>
+        <button class="btn btn-load" onclick="carregar()">↻ Carregar clientes reais</button>
+        <button class="btn" onclick="salvarConfig()">Salvar configuração</button>
         <span class="save-msg" id="saveMsg"></span>
       </div>
     </div>
@@ -383,13 +334,12 @@
 
   <!-- TOOLBAR -->
   <div class="toolbar">
-    <button class="btn btn-load" onclick="carregar()">↻ Carregar clientes</button>
     <div class="filter-tabs">
-      <div class="tab active" data-filtro="todos" onclick="setFiltro(this)">Todos</div>
-      <div class="tab" data-filtro="green" onclick="setFiltro(this)">🟢 OK</div>
-      <div class="tab" data-filtro="yellow" onclick="setFiltro(this)">🟡 Atenção</div>
-      <div class="tab" data-filtro="red" onclick="setFiltro(this)">🔴 Crítico</div>
-      <div class="tab" data-filtro="no-data" onclick="setFiltro(this)">Sem dados</div>
+      <div class="tab active" data-f="todos" onclick="setFiltro(this)">Todos</div>
+      <div class="tab" data-f="green" onclick="setFiltro(this)">🟢 OK</div>
+      <div class="tab" data-f="yellow" onclick="setFiltro(this)">🟡 Atenção</div>
+      <div class="tab" data-f="red" onclick="setFiltro(this)">🔴 Crítico</div>
+      <div class="tab" data-f="no-data" onclick="setFiltro(this)">Sem dados</div>
     </div>
     <div class="toolbar-right">
       <span class="total-badge" id="totalBadge"></span>
@@ -397,45 +347,148 @@
   </div>
 
   <div class="legend">
-    <div class="legend-item"><div class="dot dot-green"></div> CPL ≤ R$<span id="l1">20</span> e taxa ≥ <span id="l2">10</span>% e tem conversões</div>
-    <div class="legend-item"><div class="dot dot-yellow"></div> CPL entre R$<span id="l3">20</span>–<span id="l4">40</span> ou taxa baixa</div>
+    <div class="legend-item"><div class="dot dot-green"></div> CPL ≤ R$<span id="l1">20</span> e taxa ≥ <span id="l2">10</span>%</div>
+    <div class="legend-item"><div class="dot dot-yellow"></div> CPL R$<span id="l3">20</span>–<span id="l4">40</span> ou taxa baixa</div>
     <div class="legend-item"><div class="dot dot-red"></div> CPL > R$<span id="l5">40</span> ou sem conversões</div>
   </div>
 
-  <div id="mainContent">
-    <div class="empty">Configure e clique em "Carregar clientes"</div>
-  </div>
-
+  <div style="margin-bottom:1rem;"><input type="text" id="searchInput" placeholder="🔍  Buscar cliente pelo nome..." oninput="renderTudo()" style="width:100%;font-size:13px;padding:8px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);" /></div>
+  <div id="mainContent"></div>
   <div class="log-area" id="logArea"></div>
-
 </div>
 
 <!-- SEND BAR -->
 <div class="send-bar" id="sendBar">
   <div class="send-bar-info"><strong id="sendBarCount">0</strong> clientes selecionados</div>
-  <button class="btn btn-primary" id="btnEnviar" onclick="enviarSelecionados()" disabled>Enviar selecionados via n8n</button>
+  <button class="btn btn-primary" id="btnEnviar" onclick="enviarSelecionados()" disabled>Enviar via n8n</button>
 </div>
 
 <script>
 const BOARD_ID = '3946353259';
-const GRUPOS = {
-  'Ongoing 1':  'novo_grupo66587',
-  'Ongoing 2':  'novo_grupo58184',
-  'Ongoing 3':  'group_mm138tqr',
-  'Críticos':   'group_mkw8h0bc'
-};
+const GRUPOS_CONFIG = [
+  { key: 'ongoing1', nome: 'Ongoing 1', id: 'novo_grupo66587', cls: 'g1' },
+  { key: 'ongoing2', nome: 'Ongoing 2', id: 'novo_grupo58184', cls: 'g2' },
+  { key: 'ongoing3', nome: 'Ongoing 3', id: 'group_mm138tqr',  cls: 'g3' },
+  { key: 'criticos', nome: 'Críticos',  id: 'group_mkw8h0bc',  cls: 'g4' },
+];
 const ABAS_MCC = ['SARDÁ MCC','M3A (1)','M3A (2)','M3A (3)','M3A (4)','M3A (5)','M3A (6)','M3A (7)','M3A (8)','M3A (9)'];
 
-let todosClientes = [];
+
+const MESES_PT = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+function gerarDemoMes(mes) {
+  const seed = mes.charCodeAt(0) + mes.length;
+  const rnd = (min, max, s=0) => min + ((seed + s) * 7 + 13) % (max - min);
+  return [
+    { id:'1', nome:'Dr. João Cardoso', groupNome:'Ongoing 1', groupCls:'g1', adsId:'123-456-7890', phone:'5511991234567', looker:'https://looker.studio', status:'pendente',
+      dados:{ investimento: String(rnd(1500,3500)), cliques: String(rnd(800,2500,1)), conversoes: String(rnd(0,30,2)), ligacoes: String(rnd(0,15,3)), taxaConversao: String((rnd(0,25,4)/10).toFixed(1)), cplReal: String(rnd(10,150,5)), cplGoogle: String(rnd(50,200,6)) } },
+    { id:'2', nome:'Dra. Maria Santos', groupNome:'Ongoing 1', groupCls:'g1', adsId:'234-567-8901', phone:'5511992345678', looker:'https://looker.studio', status:'pendente',
+      dados:{ investimento: String(rnd(900,2200,7)), cliques: String(rnd(400,1500,8)), conversoes: String(rnd(0,20,9)), ligacoes: String(rnd(0,10,10)), taxaConversao: String((rnd(0,20,11)/10).toFixed(1)), cplReal: String(rnd(10,200,12)), cplGoogle: String(rnd(50,250,13)) } },
+    { id:'3', nome:'Dr. Carlos Menezes', groupNome:'Ongoing 1', groupCls:'g1', adsId:'345-678-9012', phone:'5511993456789', looker:'https://looker.studio', status:'pendente',
+      dados:{ investimento: String(rnd(2000,4000,14)), cliques: String(rnd(1000,2800,15)), conversoes: '0', ligacoes: String(rnd(0,3,16)), taxaConversao: '0', cplReal: '', cplGoogle: '0' } },
+    { id:'4', nome:'Dra. Ana Ferreira', groupNome:'Ongoing 1', groupCls:'g1', adsId:'456-789-0123', phone:'5511994567890', looker:'https://looker.studio', status:'pendente',
+      dados:{ investimento: String(rnd(800,1800,17)), cliques: String(rnd(500,1200,18)), conversoes: String(rnd(5,20,19)), ligacoes: String(rnd(2,8,20)), taxaConversao: String((rnd(10,20,21)/10).toFixed(1)), cplReal: String(rnd(8,30,22)), cplGoogle: String(rnd(30,100,23)) } },
+    { id:'5', nome:'Dr. Paulo Oliveira', groupNome:'Ongoing 2', groupCls:'g2', adsId:'567-890-1234', phone:'5511995678901', looker:'https://looker.studio', status:'pendente',
+      dados:{ investimento: String(rnd(1500,3000,24)), cliques: String(rnd(700,2000,25)), conversoes: String(rnd(5,25,26)), ligacoes: String(rnd(3,12,27)), taxaConversao: String((rnd(8,18,28)/10).toFixed(1)), cplReal: String(rnd(20,180,29)), cplGoogle: String(rnd(60,200,30)) } },
+    { id:'6', nome:'Dra. Lucia Campos', groupNome:'Ongoing 2', groupCls:'g2', adsId:'678-901-2345', phone:'5511996789012', looker:'https://looker.studio', status:'pendente',
+      dados:{ investimento: String(rnd(600,1500,31)), cliques: String(rnd(300,900,32)), conversoes: String(rnd(3,15,33)), ligacoes: String(rnd(1,6,34)), taxaConversao: String((rnd(10,22,35)/10).toFixed(1)), cplReal: String(rnd(15,120,36)), cplGoogle: String(rnd(40,150,37)) } },
+    { id:'7', nome:'Dr. Rafael Nunes', groupNome:'Ongoing 2', groupCls:'g2', adsId:'789-012-3456', phone:'5511997890123', looker:'https://looker.studio', status:'pendente',
+      dados:{ investimento: String(rnd(1200,2500,38)), cliques: String(rnd(600,1800,39)), conversoes: String(rnd(8,28,40)), ligacoes: String(rnd(2,10,41)), taxaConversao: String((rnd(12,22,42)/10).toFixed(1)), cplReal: String(rnd(15,80,43)), cplGoogle: String(rnd(40,120,44)) } },
+    { id:'8', nome:'Dra. Beatriz Lima', groupNome:'Ongoing 2', groupCls:'g2', adsId:'890-123-4567', phone:'5511998901234', looker:'', status:'pendente', dados: null },
+    { id:'9',  nome:'Dr. André Rocha', groupNome:'Ongoing 3', groupCls:'g3', adsId:'901-234-5678', phone:'5511999012345', looker:'https://looker.studio', status:'pendente',
+      dados:{ investimento: String(rnd(2000,4000,45)), cliques: String(rnd(1000,2800,46)), conversoes: String(rnd(5,22,47)), ligacoes: String(rnd(3,12,48)), taxaConversao: String((rnd(6,18,49)/10).toFixed(1)), cplReal: String(rnd(40,250,50)), cplGoogle: String(rnd(80,300,51)) } },
+    { id:'10', nome:'Dra. Fernanda Costa', groupNome:'Ongoing 3', groupCls:'g3', adsId:'012-345-6789', phone:'5511990123456', looker:'https://looker.studio', status:'pendente',
+      dados:{ investimento: String(rnd(1000,2200,52)), cliques: String(rnd(500,1500,53)), conversoes: String(rnd(6,18,54)), ligacoes: String(rnd(2,8,55)), taxaConversao: String((rnd(10,20,56)/10).toFixed(1)), cplReal: String(rnd(20,150,57)), cplGoogle: String(rnd(50,180,58)) } },
+    { id:'11', nome:'Dr. Marcelo Teixeira', groupNome:'Ongoing 3', groupCls:'g3', adsId:'123-456-0001', phone:'5511991111111', looker:'https://looker.studio', status:'pendente',
+      dados:{ investimento: String(rnd(500,1200,59)), cliques: String(rnd(250,800,60)), conversoes: String(rnd(4,15,61)), ligacoes: String(rnd(2,7,62)), taxaConversao: String((rnd(15,28,63)/10).toFixed(1)), cplReal: String(rnd(8,60,64)), cplGoogle: String(rnd(25,90,65)) } },
+    { id:'12', nome:'Dra. Camila Ramos', groupNome:'Ongoing 3', groupCls:'g3', adsId:'234-567-0002', phone:'5511992222222', looker:'https://looker.studio', status:'pendente',
+      dados:{ investimento: String(rnd(1200,2500,66)), cliques: String(rnd(600,1500,67)), conversoes: String(rnd(4,14,68)), ligacoes: String(rnd(1,5,69)), taxaConversao: String((rnd(5,14,70)/10).toFixed(1)), cplReal: String(rnd(50,300,71)), cplGoogle: String(rnd(80,350,72)) } },
+    { id:'13', nome:'Dr. Roberto Alves', groupNome:'Críticos', groupCls:'g4', adsId:'345-678-0003', phone:'5511993333333', looker:'https://looker.studio', status:'pendente',
+      dados:{ investimento: String(rnd(2500,5000,73)), cliques: String(rnd(1200,3000,74)), conversoes: '0', ligacoes: String(rnd(0,2,75)), taxaConversao: '0', cplReal: '', cplGoogle: '0' } },
+    { id:'14', nome:'Dra. Simone Barbosa', groupNome:'Críticos', groupCls:'g4', adsId:'456-789-0004', phone:'5511994444444', looker:'https://looker.studio', status:'pendente',
+      dados:{ investimento: String(rnd(1500,3000,76)), cliques: String(rnd(700,1800,77)), conversoes: String(rnd(1,4,78)), ligacoes: '0', taxaConversao: String((rnd(1,5,79)/10).toFixed(1)), cplReal: String(rnd(300,900,80)), cplGoogle: String(rnd(400,1000,81)) } },
+    { id:'15', nome:'Dr. Gustavo Pinto', groupNome:'Críticos', groupCls:'g4', adsId:'567-890-0005', phone:'5511995555555', looker:'https://looker.studio', status:'pendente',
+      dados:{ investimento: String(rnd(800,1800,82)), cliques: String(rnd(400,1000,83)), conversoes: String(rnd(4,12,84)), ligacoes: String(rnd(2,6,85)), taxaConversao: String((rnd(10,18,86)/10).toFixed(1)), cplReal: String(rnd(30,200,87)), cplGoogle: String(rnd(60,250,88)) } },
+    { id:'16', nome:'Dra. Helena Martins', groupNome:'Críticos', groupCls:'g4', adsId:'', phone:'', looker:'', status:'pendente', dados: null },
+  ];
+}
+
+function popularSeletorMes() {
+  const sel = document.getElementById('mesSeletor');
+  const hoje = new Date();
+  sel.innerHTML = '';
+  for (let i = 1; i <= 12; i++) {
+    const d = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
+    const label = MESES_PT[d.getMonth()] + ' ' + d.getFullYear();
+    const opt = document.createElement('option');
+    opt.value = label;
+    opt.textContent = label;
+    if (i === 1) opt.selected = true;
+    sel.appendChild(opt);
+  }
+}
+
+function getMesSelecionado() {
+  return document.getElementById('mesSeletor')?.value || getMesAnterior();
+}
+
+function onMesMudou() {
+  // Com dados reais: recarrega da planilha
+  // Com demo: regenera dados fictícios pro mês
+  const mes = getMesSelecionado();
+  clientes = gerarDemoMes(mes);
+  renderTudo();
+}
+
+// DADOS FICTÍCIOS para validação visual
+const CLIENTES_DEMO = [
+  { id:'1', nome:'Dr. João Cardoso', groupNome:'Ongoing 1', groupCls:'g1', adsId:'123-456-7890', phone:'5511991234567', looker:'https://looker.studio', status:'pendente',
+    dados:{ investimento:'2400', cliques:'1847', conversoes:'23', ligacoes:'8', taxaConversao:'12.5', cplReal:'77', cplGoogle:'104' } },
+  { id:'2', nome:'Dra. Maria Santos', groupNome:'Ongoing 1', groupCls:'g1', adsId:'234-567-8901', phone:'5511992345678', looker:'https://looker.studio', status:'pendente',
+    dados:{ investimento:'1800', cliques:'920', conversoes:'18', ligacoes:'3', taxaConversao:'8.5', cplReal:'85', cplGoogle:'100' } },
+  { id:'3', nome:'Dr. Carlos Menezes', groupNome:'Ongoing 1', groupCls:'g1', adsId:'345-678-9012', phone:'5511993456789', looker:'https://looker.studio', status:'pendente',
+    dados:{ investimento:'3200', cliques:'2100', conversoes:'0', ligacoes:'2', taxaConversao:'0', cplReal:'', cplGoogle:'0' } },
+  { id:'4', nome:'Dra. Ana Ferreira', groupNome:'Ongoing 1', groupCls:'g1', adsId:'456-789-0123', phone:'5511994567890', looker:'https://looker.studio', status:'pendente',
+    dados:{ investimento:'1200', cliques:'780', conversoes:'12', ligacoes:'4', taxaConversao:'15.4', cplReal:'15', cplGoogle:'100' } },
+
+  { id:'5', nome:'Dr. Paulo Oliveira', groupNome:'Ongoing 2', groupCls:'g2', adsId:'567-890-1234', phone:'5511995678901', looker:'https://looker.studio', status:'pendente',
+    dados:{ investimento:'2100', cliques:'1500', conversoes:'15', ligacoes:'6', taxaConversao:'11.2', cplReal:'100', cplGoogle:'140' } },
+  { id:'6', nome:'Dra. Lucia Campos', groupNome:'Ongoing 2', groupCls:'g2', adsId:'678-901-2345', phone:'5511996789012', looker:'https://looker.studio', status:'pendente',
+    dados:{ investimento:'900', cliques:'600', conversoes:'8', ligacoes:'2', taxaConversao:'13.3', cplReal:'90', cplGoogle:'112' } },
+  { id:'7', nome:'Dr. Rafael Nunes', groupNome:'Ongoing 2', groupCls:'g2', adsId:'789-012-3456', phone:'5511997890123', looker:'https://looker.studio', status:'pendente',
+    dados:{ investimento:'1600', cliques:'890', conversoes:'22', ligacoes:'5', taxaConversao:'16.2', cplReal:'59', cplGoogle:'72' } },
+  { id:'8', nome:'Dra. Beatriz Lima', groupNome:'Ongoing 2', groupCls:'g2', adsId:'890-123-4567', phone:'5511998901234', looker:'', status:'pendente',
+    dados:null },
+
+  { id:'9',  nome:'Dr. André Rocha', groupNome:'Ongoing 3', groupCls:'g3', adsId:'901-234-5678', phone:'5511999012345', looker:'https://looker.studio', status:'pendente',
+    dados:{ investimento:'2800', cliques:'1920', conversoes:'19', ligacoes:'7', taxaConversao:'9.2', cplReal:'107', cplGoogle:'147' } },
+  { id:'10', nome:'Dra. Fernanda Costa', groupNome:'Ongoing 3', groupCls:'g3', adsId:'012-345-6789', phone:'5511990123456', looker:'https://looker.studio', status:'pendente',
+    dados:{ investimento:'1500', cliques:'1100', conversoes:'14', ligacoes:'3', taxaConversao:'12.7', cplReal:'88', cplGoogle:'107' } },
+  { id:'11', nome:'Dr. Marcelo Teixeira', groupNome:'Ongoing 3', groupCls:'g3', adsId:'123-456-0001', phone:'5511991111111', looker:'https://looker.studio', status:'pendente',
+    dados:{ investimento:'700', cliques:'400', conversoes:'9', ligacoes:'5', taxaConversao:'22.5', cplReal:'50', cplGoogle:'77' } },
+  { id:'12', nome:'Dra. Camila Ramos', groupNome:'Ongoing 3', groupCls:'g3', adsId:'234-567-0002', phone:'5511992222222', looker:'https://looker.studio', status:'pendente',
+    dados:{ investimento:'1900', cliques:'850', conversoes:'11', ligacoes:'2', taxaConversao:'7.8', cplReal:'146', cplGoogle:'172' } },
+
+  { id:'13', nome:'Dr. Roberto Alves', groupNome:'Críticos', groupCls:'g4', adsId:'345-678-0003', phone:'5511993333333', looker:'https://looker.studio', status:'pendente',
+    dados:{ investimento:'3500', cliques:'2400', conversoes:'0', ligacoes:'1', taxaConversao:'0', cplReal:'', cplGoogle:'0' } },
+  { id:'14', nome:'Dra. Simone Barbosa', groupNome:'Críticos', groupCls:'g4', adsId:'456-789-0004', phone:'5511994444444', looker:'https://looker.studio', status:'pendente',
+    dados:{ investimento:'2200', cliques:'1300', conversoes:'3', ligacoes:'0', taxaConversao:'2.3', cplReal:'733', cplGoogle:'733' } },
+  { id:'15', nome:'Dr. Gustavo Pinto', groupNome:'Críticos', groupCls:'g4', adsId:'567-890-0005', phone:'5511995555555', looker:'https://looker.studio', status:'pendente',
+    dados:{ investimento:'1100', cliques:'500', conversoes:'7', ligacoes:'3', taxaConversao:'14.0', cplReal:'110', cplGoogle:'157' } },
+  { id:'16', nome:'Dra. Helena Martins', groupNome:'Críticos', groupCls:'g4', adsId:'', phone:'', looker:'', status:'pendente',
+    dados:null },
+];
+
+let clientes = [];
 let dadosPlanilha = {};
 let filtroAtivo = 'todos';
+let gruposAbertos = { 'Ongoing 1': true, 'Ongoing 2': true, 'Ongoing 3': true, 'Críticos': true };
 
-// ---- CONFIG ----
 function toggleConfig() {
-  const body = document.getElementById('configBody');
-  const label = document.getElementById('configToggleLabel');
-  const open = body.classList.toggle('open');
-  label.textContent = open ? 'Ocultar' : 'Mostrar';
+  const body = document.getElementById('cfgBody');
+  const label = document.getElementById('cfgLabel');
+  body.classList.toggle('open');
+  label.textContent = body.classList.contains('open') ? 'Ocultar' : 'Mostrar';
 }
 
 function salvarConfig() {
@@ -458,21 +511,18 @@ function carregarConfig() {
   atualizarLegenda();
 }
 
-function atualizarLegenda() {
-  const y = document.getElementById('cplYellow').value || 20;
-  const r = document.getElementById('cplRed').value || 40;
-  const t = document.getElementById('taxaMin').value || 10;
-  document.getElementById('l1').textContent = y;
-  document.getElementById('l2').textContent = t;
-  document.getElementById('l3').textContent = y;
-  document.getElementById('l4').textContent = r;
-  document.getElementById('l5').textContent = r;
-}
-
 function getConf(id) { return document.getElementById(id).value.trim(); }
 
-// ---- LOG ----
-function log(msg, tipo = 'info') {
+function atualizarLegenda() {
+  const y = getConf('cplYellow') || 20;
+  const r = getConf('cplRed') || 40;
+  const t = getConf('taxaMin') || 10;
+  ['l1','l2','l3','l4','l5'].forEach((id, i) => {
+    document.getElementById(id).textContent = [y,t,y,r,r][i];
+  });
+}
+
+function log(msg, tipo='info') {
   const area = document.getElementById('logArea');
   area.classList.add('visible');
   const d = document.createElement('div');
@@ -482,16 +532,13 @@ function log(msg, tipo = 'info') {
   area.scrollTop = area.scrollHeight;
 }
 
-// ---- MÊS ----
 function getMesAnterior() {
   const hoje = new Date();
   const d = new Date(hoje.getFullYear(), hoje.getMonth() - 1, 1);
-  const meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-  return meses[d.getMonth()] + ' ' + d.getFullYear();
+  return MESES_PT[d.getMonth()] + ' ' + d.getFullYear();
 }
 
-// ---- STATUS ----
-function calcularStatus(dados) {
+function calcStatus(dados) {
   if (!dados) return 'no-data';
   const cpl = parseFloat(dados.cplReal) || 0;
   const taxa = parseFloat(dados.taxaConversao) || 0;
@@ -499,7 +546,6 @@ function calcularStatus(dados) {
   const cplY = parseFloat(getConf('cplYellow') || 20);
   const cplR = parseFloat(getConf('cplRed') || 40);
   const taxaMin = parseFloat(getConf('taxaMin') || 10);
-
   if (convs === 0) return 'red';
   if (cpl > cplR) return 'red';
   if (cpl > cplY || taxa < taxaMin) return 'yellow';
@@ -515,276 +561,209 @@ function alertTags(dados, status) {
   const cplR = parseFloat(getConf('cplRed') || 40);
   const taxaMin = parseFloat(getConf('taxaMin') || 10);
   const tags = [];
-  if (convs === 0) tags.push({ cls: 'red', txt: 'Sem conversões' });
-  if (cpl > cplR) tags.push({ cls: 'red', txt: `CPL R$${cpl.toFixed(0)}` });
-  else if (cpl > cplY) tags.push({ cls: 'yellow', txt: `CPL R$${cpl.toFixed(0)}` });
-  if (taxa < taxaMin && convs > 0) tags.push({ cls: 'yellow', txt: `Taxa ${taxa.toFixed(1)}%` });
+  if (convs === 0) tags.push({ cls:'red', txt:'Sem conversões' });
+  if (cpl > cplR) tags.push({ cls:'red', txt:`CPL R$${cpl.toFixed(0)}` });
+  else if (cpl > cplY) tags.push({ cls:'yellow', txt:`CPL R$${cpl.toFixed(0)}` });
+  if (taxa < taxaMin && convs > 0) tags.push({ cls:'yellow', txt:`Taxa ${taxa.toFixed(1)}%` });
   return tags.map(t => `<span class="alert-tag ${t.cls}">${t.txt}</span>`).join('');
 }
 
-// ---- CARREGAR ----
-async function carregar() {
-  const key = getConf('mondayKey');
-  if (!key) { log('Informe a Monday API Key', 'err'); return; }
-
-  log('Carregando clientes do Monday...', 'info');
-  document.getElementById('mainContent').innerHTML = '<div class="empty">Carregando...</div>';
-
-  const groupIds = Object.values(GRUPOS).map(g => `"${g}"`).join(',');
-  const query = `{
-    boards(ids:[${BOARD_ID}]){
-      groups(ids:[${groupIds}]){
-        id title
-        items_page(limit:200){
-          items{
-            id name group{id}
-            column_values(ids:["text_mksnmx8j","phone_mkxsskj6","link5"]){
-              id text
-            }
-          }
-        }
-      }
-    }
-  }`;
-
-  try {
-    const res = await fetch('https://api.monday.com/v2', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': key, 'API-Version': '2024-01' },
-      body: JSON.stringify({ query })
-    });
-    const data = await res.json();
-    if (data.errors) throw new Error(data.errors[0].message);
-
-    todosClientes = [];
-    const grupos = data?.data?.boards?.[0]?.groups || [];
-    grupos.forEach(g => {
-      const nomeGrupo = Object.keys(GRUPOS).find(k => GRUPOS[k] === g.id) || g.title;
-      (g.items_page?.items || []).forEach(item => {
-        todosClientes.push({
-          id: item.id,
-          nome: item.name,
-          groupId: g.id,
-          groupNome: nomeGrupo,
-          adsId: item.column_values.find(c => c.id === 'text_mksnmx8j')?.text || '',
-          phone: item.column_values.find(c => c.id === 'phone_mkxsskj6')?.text || '',
-          looker: item.column_values.find(c => c.id === 'link5')?.text || '',
-          status: 'pendente'
-        });
-      });
-    });
-
-    log(`${todosClientes.length} clientes carregados`, 'ok');
-
-    const sheetId = getConf('sheetId');
-    const sheetsKey = getConf('sheetsKey');
-    if (sheetId && sheetsKey) {
-      await carregarPlanilha(sheetId, sheetsKey);
-    } else {
-      log('Sheets não configurado — sem dados de performance', 'info');
-    }
-
-    const mes = getMesAnterior();
-    document.getElementById('mesBadge').textContent = mes;
-    renderTudo();
-
-  } catch(e) {
-    log('Erro Monday: ' + e.message, 'err');
-    document.getElementById('mainContent').innerHTML = '<div class="empty">Erro ao carregar. Verifique a API Key.</div>';
-  }
-}
-
-async function carregarPlanilha(sheetId, sheetsKey) {
-  const mes = getMesAnterior();
-  log('Carregando dados do Sheets para ' + mes + '...', 'info');
-  dadosPlanilha = {};
-
-  for (const aba of ABAS_MCC) {
-    try {
-      const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(aba)}!A:L?key=${sheetsKey}`;
-      const res = await fetch(url);
-      if (!res.ok) continue;
-      const data = await res.json();
-      const rows = data.values || [];
-      rows.slice(1).forEach(row => {
-        if (!(row[0] || '').includes(mes.split(' ')[0])) return;
-        const id = (row[2] || '').replace(/-/g, '');
-        if (!id) return;
-        dadosPlanilha[id] = {
-          mes: row[0], investimento: row[3], impressoes: row[4],
-          cliques: row[5], cpcMedio: row[6], conversoes: row[7],
-          ligacoes: row[8], taxaConversao: row[9], cplGoogle: row[10], cplReal: row[11]
-        };
-      });
-    } catch(e) {}
-  }
-
-  const total = Object.keys(dadosPlanilha).length;
-  log(`Dados Sheets: ${total} contas encontradas`, 'ok');
-}
-
-// ---- RENDER ----
 function setFiltro(el) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
-  filtroAtivo = el.dataset.filtro;
+  filtroAtivo = el.dataset.f;
   renderTudo();
 }
 
-function renderTudo() {
-  if (!todosClientes.length) return;
+function toggleGrupo(nome) {
+  gruposAbertos[nome] = !gruposAbertos[nome];
+  const body = document.getElementById('gbody_' + nome.replace(/\s/g,'_'));
+  const arrow = document.getElementById('garrow_' + nome.replace(/\s/g,'_'));
+  const header = document.getElementById('gheader_' + nome.replace(/\s/g,'_'));
+  if (body) body.classList.toggle('collapsed', !gruposAbertos[nome]);
+  if (arrow) arrow.classList.toggle('open', gruposAbertos[nome]);
+  if (header) header.classList.toggle('collapsed', !gruposAbertos[nome]);
+}
 
-  // Enriquecer com status
-  const clientes = todosClientes.map(c => {
-    const adsIdClean = (c.adsId || '').replace(/-/g, '');
-    const dados = adsIdClean ? dadosPlanilha[adsIdClean] : null;
-    const status = calcularStatus(dados);
-    return { ...c, dados, statusAlerta: status };
+function selecionarGrupo(nome, e) {
+  e.stopPropagation();
+  const ids = clientes.filter(c => c.groupNome === nome).map(c => c.id);
+  document.querySelectorAll('.client-check').forEach(cb => {
+    if (ids.includes(cb.dataset.id)) cb.checked = true;
   });
+  atualizarBarra();
+}
 
-  // Filtrar
-  const filtrados = filtroAtivo === 'todos'
-    ? clientes
-    : clientes.filter(c => c.statusAlerta === filtroAtivo);
+function atualizarBarra() {
+  const n = document.querySelectorAll('.client-check:checked').length;
+  document.getElementById('sendBar').classList.toggle('visible', n > 0);
+  document.getElementById('sendBarCount').textContent = n;
+  const btn = document.getElementById('btnEnviar');
+  btn.disabled = n === 0;
+  btn.textContent = n > 0 ? `Enviar ${n} via n8n` : 'Enviar via n8n';
+}
+
+function renderTudo() {
+  const enriched = clientes.map(c => ({ ...c, statusAlerta: calcStatus(c.dados) }));
+  const busca = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
+  const porFiltro = filtroAtivo === 'todos' ? enriched : enriched.filter(c => c.statusAlerta === filtroAtivo);
+  const filtrados = busca ? porFiltro.filter(c => c.nome.toLowerCase().includes(busca)) : porFiltro;
 
   document.getElementById('totalBadge').textContent = filtrados.length + ' clientes';
 
   if (!filtrados.length) {
     document.getElementById('mainContent').innerHTML = '<div class="empty">Nenhum cliente neste filtro</div>';
-    atualizarBarraEnvio();
+    atualizarBarra();
     return;
   }
 
-  // Agrupar por grupo
+  const ordem = ['Ongoing 1','Ongoing 2','Ongoing 3','Críticos'];
   const grupos = {};
   filtrados.forEach(c => {
-    if (!grupos[c.groupNome]) grupos[c.groupNome] = [];
-    grupos[c.groupNome].push(c);
+    if (!grupos[c.groupNome]) grupos[c.groupNome] = { cls: c.groupCls, itens: [] };
+    grupos[c.groupNome].itens.push(c);
   });
 
-  // Ordenar grupos: Ongoing 1, 2, 3, Críticos
-  const ordemGrupos = ['Ongoing 1', 'Ongoing 2', 'Ongoing 3', 'Críticos'];
-  const gruposOrdenados = ordemGrupos.filter(g => grupos[g]);
-
   let html = '';
-  gruposOrdenados.forEach(nomeGrupo => {
-    const lista = grupos[nomeGrupo];
+  ordem.filter(g => grupos[g]).forEach(nomeGrupo => {
+    const { cls, itens } = grupos[nomeGrupo];
+    const safeKey = nomeGrupo.replace(/\s/g,'_');
+    const aberto = gruposAbertos[nomeGrupo] !== false;
+
     html += `
-      <div class="group-section">
-        <div class="group-header">
-          <div class="group-name">${nomeGrupo}</div>
-          <div class="group-count">${lista.length} cliente${lista.length !== 1 ? 's' : ''}</div>
-          <div class="group-select-all" onclick="selecionarGrupo('${nomeGrupo}')">Selecionar todos</div>
+      <div class="grupo-accordion">
+        <div class="grupo-header ${cls} ${aberto ? '' : 'collapsed'}" id="gheader_${safeKey}" onclick="toggleGrupo('${nomeGrupo}')">
+          <span class="grupo-arrow ${aberto ? 'open' : ''}" id="garrow_${safeKey}">▶</span>
+          <span class="grupo-nome">${nomeGrupo}</span>
+          <span class="grupo-count">${itens.length} cliente${itens.length !== 1 ? 's' : ''}</span>
+          <span class="grupo-sel-all" onclick="selecionarGrupo('${nomeGrupo}', event)">Selecionar todos</span>
         </div>
+        <div class="grupo-body ${aberto ? '' : 'collapsed'}" id="gbody_${safeKey}">
     `;
 
-    lista.forEach((c, i) => {
-      const globalIdx = todosClientes.findIndex(x => x.id === c.id);
+    itens.forEach(c => {
       const d = c.dados;
       const sa = c.statusAlerta;
+      const cplY = parseFloat(getConf('cplYellow') || 20);
+      const cplR = parseFloat(getConf('cplRed') || 40);
+      const taxaMin = parseFloat(getConf('taxaMin') || 10);
 
-      const metricsHtml = d ? `
-        <div class="client-metrics">
-          <span class="metric">Invest. <strong>R$${parseFloat(d.investimento||0).toFixed(0)}</strong></span>
-          <span class="metric">Cliques <strong>${d.cliques||0}</strong></span>
-          <span class="metric ${sa === 'red' && parseInt(d.conversoes||0) === 0 ? 'alert-red' : ''}">Conversões <strong>${d.conversoes||0}</strong></span>
-          <span class="metric">Lig. <strong>${d.ligacoes||0}</strong></span>
-          <span class="metric ${sa !== 'green' && parseFloat(d.cplReal||0) > parseFloat(getConf('cplYellow')||20) ? (sa === 'red' ? 'alert-red' : 'alert-yellow') : ''}">CPL Real <strong>R$${parseFloat(d.cplReal||0).toFixed(0)}</strong></span>
-          <span class="metric ${sa !== 'green' && parseFloat(d.taxaConversao||0) < parseFloat(getConf('taxaMin')||10) ? 'alert-yellow' : ''}">Taxa conv. <strong>${parseFloat(d.taxaConversao||0).toFixed(1)}%</strong></span>
-        </div>
-        <div class="alerts">${alertTags(d, sa)}</div>
-      ` : `<div class="client-metrics"><span class="metric" style="color:var(--text-faint)">Sem dados na planilha</span></div>`;
+      const metricsHtml = d ? (() => {
+        const cpl = parseFloat(d.cplReal) || 0;
+        const taxa = parseFloat(d.taxaConversao) || 0;
+        const convs = parseInt(d.conversoes) || 0;
+        const cplCls = cpl > cplR ? 'crit' : cpl > cplY ? 'warn' : '';
+        const taxaCls = taxa < taxaMin && convs > 0 ? 'warn' : '';
+        const convCls = convs === 0 ? 'crit' : '';
+        return `
+          <div class="client-metrics">
+            <span class="metric">Invest. <strong>R$${parseFloat(d.investimento||0).toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:0})}</strong></span>
+            <span class="metric">Cliques <strong>${parseInt(d.cliques||0).toLocaleString('pt-BR')}</strong></span>
+            <span class="metric ${convCls}">Conv. <strong>${d.conversoes||0}</strong></span>
+            <span class="metric">Lig. <strong>${d.ligacoes||0}</strong></span>
+            <span class="metric ${cplCls}">CPL Real <strong>R$${parseFloat(d.cplReal||0).toFixed(0)}</strong></span>
+            <span class="metric ${taxaCls}">Taxa <strong>${parseFloat(d.taxaConversao||0).toFixed(1)}%</strong></span>
+          </div>
+          <div class="alerts">${alertTags(d, sa)}</div>
+        `;
+      })() : `<div class="client-metrics"><span class="metric" style="color:var(--text-faint)">Sem dados na planilha</span></div>`;
 
-      const sendClass = c.status === 'enviado' ? 'sent' : c.status === 'erro' ? 'error' : '';
-      const sendTxt = c.status === 'enviado' ? '✓ Enviado' : c.status === 'erro' ? '! Erro' : 'Enviar';
+      const sBtnCls = c.status === 'enviado' ? 'sent' : c.status === 'erro' ? 'error' : '';
+      const sBtnTxt = c.status === 'enviado' ? '✓ Enviado' : c.status === 'erro' ? '! Erro' : 'Enviar';
 
       html += `
-        <div class="client-card ${sa}" id="card_${c.id}">
-          <div><input type="checkbox" class="client-check" data-id="${c.id}" onchange="atualizarBarraEnvio()" /></div>
+        <div class="client-card ${sa}">
+          <div><input type="checkbox" class="client-check" data-id="${c.id}" onchange="atualizarBarra()" /></div>
           <div>
             <div class="client-name-txt">${c.nome}</div>
             ${metricsHtml}
           </div>
-          <div style="font-size:11px;color:var(--text-faint);text-align:right;">${c.adsId || '—'}</div>
-          <div>
-            <button class="send-btn ${sendClass}" id="sbtn_${c.id}" onclick="enviarUm('${c.id}')">${sendTxt}</button>
-          </div>
+          <div class="ads-id">${c.adsId || '—'}</div>
+          <div><button class="send-btn ${sBtnCls}" id="sbtn_${c.id}" onclick="enviarUm('${c.id}')">${sBtnTxt}</button></div>
         </div>
       `;
     });
 
-    html += `</div>`;
+    html += `</div></div>`;
   });
 
   document.getElementById('mainContent').innerHTML = html;
-  atualizarBarraEnvio();
+  atualizarBarra();
 }
 
-function selecionarGrupo(nomeGrupo) {
-  const ids = todosClientes.filter(c => c.groupNome === nomeGrupo).map(c => c.id);
-  document.querySelectorAll('.client-check').forEach(cb => {
-    if (ids.includes(cb.dataset.id)) cb.checked = true;
-  });
-  atualizarBarraEnvio();
+async function carregar() {
+  const key = getConf('mondayKey');
+  if (!key) { log('Informe a Monday API Key', 'err'); return; }
+
+  log('Carregando clientes do Monday...', 'info');
+  const groupIds = GRUPOS_CONFIG.map(g => `"${g.id}"`).join(',');
+  const query = `{boards(ids:[${BOARD_ID}]){groups(ids:[${groupIds}]){id title items_page(limit:200){items{id name group{id} column_values(ids:["text_mksnmx8j","phone_mkxsskj6","link5"]){id text}}}}}}`;
+
+  try {
+    const res = await fetch('https://api.monday.com/v2', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':key,'API-Version':'2024-01'},
+      body:JSON.stringify({query})
+    });
+    const data = await res.json();
+    if (data.errors) throw new Error(data.errors[0].message);
+
+    clientes = [];
+    const grupos = data?.data?.boards?.[0]?.groups || [];
+    grupos.forEach(g => {
+      const cfg = GRUPOS_CONFIG.find(c => c.id === g.id);
+      if (!cfg) return;
+      (g.items_page?.items || []).forEach(item => {
+        clientes.push({
+          id: item.id, nome: item.name,
+          groupNome: cfg.nome, groupCls: cfg.cls,
+          adsId: item.column_values.find(c => c.id==='text_mksnmx8j')?.text || '',
+          phone: item.column_values.find(c => c.id==='phone_mkxsskj6')?.text || '',
+          looker: item.column_values.find(c => c.id==='link5')?.text || '',
+          status: 'pendente', dados: null
+        });
+      });
+    });
+
+    log(`${clientes.length} clientes carregados`, 'ok');
+    document.getElementById('mesBadge').textContent = getMesAnterior();
+    renderTudo();
+  } catch(e) {
+    log('Erro: ' + e.message, 'err');
+  }
 }
 
-function atualizarBarraEnvio() {
-  const checks = document.querySelectorAll('.client-check:checked');
-  const n = checks.length;
-  const bar = document.getElementById('sendBar');
-  const btn = document.getElementById('btnEnviar');
-  bar.classList.toggle('visible', n > 0);
-  document.getElementById('sendBarCount').textContent = n;
-  btn.disabled = n === 0;
-  btn.textContent = n > 0 ? `Enviar ${n} via n8n` : 'Enviar selecionados via n8n';
-}
-
-// ---- ENVIO ----
 async function enviarUm(clienteId) {
   const webhookUrl = getConf('webhookUrl');
   if (!webhookUrl) { log('Informe a URL do webhook do n8n', 'err'); return; }
 
-  const cliente = todosClientes.find(c => c.id === clienteId);
-  if (!cliente) return;
+  const c = clientes.find(x => x.id === clienteId);
+  if (!c) return;
 
   const btn = document.getElementById('sbtn_' + clienteId);
   if (btn) { btn.textContent = '...'; btn.className = 'send-btn sending'; }
 
-  const adsIdClean = (cliente.adsId || '').replace(/-/g, '');
-  const dados = dadosPlanilha[adsIdClean] || {};
-
   const payload = {
-    cliente_id: cliente.id,
-    nome: cliente.nome,
-    telefone: (cliente.phone || '').replace(/\D/g, ''),
-    ads_id: cliente.adsId,
-    grupo: cliente.groupNome,
-    link_looker: cliente.looker,
-    mes: getMesAnterior(),
-    investimento: dados.investimento || '',
-    impressoes: dados.impressoes || '',
-    cliques: dados.cliques || '',
-    cpc_medio: dados.cpcMedio || '',
-    conversoes: dados.conversoes || '',
-    ligacoes: dados.ligacoes || '',
-    taxa_conversao: dados.taxaConversao || '',
-    cpl_google: dados.cplGoogle || '',
-    cpl_real: dados.cplReal || ''
+    cliente_id: c.id, nome: c.nome,
+    telefone: (c.phone||'').replace(/\D/g,''),
+    ads_id: c.adsId, grupo: c.groupNome,
+    link_looker: c.looker, mes: getMesSelecionado(),
+    ...(c.dados || {})
   };
 
   try {
     await fetch(webhookUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload)
     });
-    cliente.status = 'enviado';
+    c.status = 'enviado';
     if (btn) { btn.textContent = '✓ Enviado'; btn.className = 'send-btn sent'; }
-    log('Webhook disparado: ' + cliente.nome, 'ok');
+    log('Enviado: ' + c.nome, 'ok');
   } catch(e) {
-    cliente.status = 'erro';
+    c.status = 'erro';
     if (btn) { btn.textContent = '! Erro'; btn.className = 'send-btn error'; }
-    log('Erro webhook ' + cliente.nome + ': ' + e.message, 'err');
+    log('Erro: ' + c.nome + ' — ' + e.message, 'err');
   }
 }
 
@@ -796,11 +775,14 @@ async function enviarSelecionados() {
     await new Promise(r => setTimeout(r, 600));
   }
   document.getElementById('btnEnviar').disabled = false;
-  atualizarBarraEnvio();
+  atualizarBarra();
 }
 
+// INIT
 carregarConfig();
-document.getElementById('mesBadge').textContent = getMesAnterior();
+popularSeletorMes();
+clientes = gerarDemoMes(getMesSelecionado());
+renderTudo();
 </script>
 </body>
 </html>

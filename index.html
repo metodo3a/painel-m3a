@@ -162,7 +162,7 @@
 
   .grupo-sel-all {
     margin-left: auto; font-size: 12px; opacity: 0.8;
-    cursor: pointer; text-decoration: underline;
+    cursor: pointer; text-decoration: underline; white-space: nowrap;
   }
   .g1 .grupo-sel-all { color: var(--g1-text); }
   .g2 .grupo-sel-all { color: var(--g2-text); }
@@ -588,9 +588,13 @@ function toggleGrupo(nome) {
 function selecionarGrupo(nome, e) {
   e.stopPropagation();
   const ids = clientes.filter(c => c.groupNome === nome).map(c => c.id);
-  document.querySelectorAll('.client-check').forEach(cb => {
-    if (ids.includes(cb.dataset.id)) cb.checked = true;
-  });
+  const checks = Array.from(document.querySelectorAll('.client-check')).filter(cb => ids.includes(cb.dataset.id));
+  const todosMarcados = checks.every(cb => cb.checked);
+  checks.forEach(cb => cb.checked = !todosMarcados);
+  // Atualiza label do botão
+  const safeKey = nome.replace(/\s/g,'_');
+  const btn = document.getElementById('gselall_' + safeKey);
+  if (btn) btn.textContent = todosMarcados ? 'Selecionar todos' : 'Desmarcar todos';
   atualizarBarra();
 }
 
@@ -636,7 +640,7 @@ function renderTudo() {
           <span class="grupo-arrow ${aberto ? 'open' : ''}" id="garrow_${safeKey}">▶</span>
           <span class="grupo-nome">${nomeGrupo}</span>
           <span class="grupo-count">${itens.length} cliente${itens.length !== 1 ? 's' : ''}</span>
-          <span class="grupo-sel-all" onclick="selecionarGrupo('${nomeGrupo}', event)">Selecionar todos</span>
+          <span class="grupo-sel-all" id="gselall_${safeKey}" onclick="selecionarGrupo('${nomeGrupo}', event)">Selecionar todos</span>
         </div>
         <div class="grupo-body ${aberto ? '' : 'collapsed'}" id="gbody_${safeKey}">
     `;

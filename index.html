@@ -279,6 +279,29 @@
   .refresh-dot.ativo { background: var(--green); animation: pulse 2s infinite; }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
+  .nao-enviar-wrap { position: relative; display: inline-block; }
+  .nao-enviar-btn {
+    font-size: 12px; padding: 5px 10px; border-radius: var(--radius-sm);
+    border: 1px solid var(--border-strong); background: transparent;
+    color: var(--text-muted); cursor: pointer; white-space: nowrap;
+    transition: all 0.1s;
+  }
+  .nao-enviar-btn:hover { background: var(--bg); color: var(--text); }
+  .nao-enviar-dropdown {
+    position: absolute; right: 0; top: 110%; z-index: 50;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    min-width: 160px; display: none;
+  }
+  .nao-enviar-dropdown.open { display: block; }
+  .nao-enviar-option {
+    padding: 8px 14px; font-size: 13px; cursor: pointer;
+    color: var(--text); transition: background 0.1s;
+    border-bottom: 1px solid var(--border);
+  }
+  .nao-enviar-option:last-child { border-bottom: none; }
+  .nao-enviar-option:hover { background: var(--bg); }
+
   .secao-titulo {
     font-size: 12px; font-weight: 600; text-transform: uppercase;
     letter-spacing: 0.06em; color: var(--text-muted);
@@ -756,8 +779,10 @@ function renderTudo() {
 
   const ordem = ['Ongoing 1','Ongoing 2','Ongoing 3','Críticos'];
 
-  // Separar pendentes e enviados
-  const pendentes = filtrados.filter(c => !c.relatorioEnviado);
+  // Separar em 4 seções
+  const pendentes = filtrados.filter(c => !c.relatorioEnviado && c.statusRelatorio !== 'Campanha Nova' && c.statusRelatorio !== 'Campanha parada');
+  const campanhaNova = filtrados.filter(c => c.statusRelatorio === 'Campanha Nova');
+  const campanhaParada = filtrados.filter(c => c.statusRelatorio === 'Campanha parada');
   const enviados = filtrados.filter(c => c.relatorioEnviado);
 
   const gruposPendentes = {};
@@ -765,7 +790,16 @@ function renderTudo() {
     if (!gruposPendentes[c.groupNome]) gruposPendentes[c.groupNome] = { cls: c.groupCls, itens: [] };
     gruposPendentes[c.groupNome].itens.push(c);
   });
-
+  const gruposCampanhaNova = {};
+  campanhaNova.forEach(c => {
+    if (!gruposCampanhaNova[c.groupNome]) gruposCampanhaNova[c.groupNome] = { cls: c.groupCls, itens: [] };
+    gruposCampanhaNova[c.groupNome].itens.push(c);
+  });
+  const gruposCampanhaParada = {};
+  campanhaParada.forEach(c => {
+    if (!gruposCampanhaParada[c.groupNome]) gruposCampanhaParada[c.groupNome] = { cls: c.groupCls, itens: [] };
+    gruposCampanhaParada[c.groupNome].itens.push(c);
+  });
   const gruposEnviados = {};
   enviados.forEach(c => {
     if (!gruposEnviados[c.groupNome]) gruposEnviados[c.groupNome] = { cls: c.groupCls, itens: [] };
@@ -833,13 +867,72 @@ function renderTudo() {
             ${metricsHtml}
           </div>
           <div class="ads-id">${c.adsId || '—'}</div>
-          <div><button class="send-btn ${sBtnCls}" id="sbtn_${c.id}" onclick="enviarUm('${c.id}')">${sBtnTxt}</button></div>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <button class="send-btn ${sBtnCls}" id="sbtn_${c.id}" onclick="enviarUm('${c.id}')">${sBtnTxt}</button>
+            ${sa !== 'no-data' || true ? `
+            <div class="nao-enviar-wrap" id="newrap_${c.id}">
+              <button class="nao-enviar-btn" onclick="toggleNaoEnviar('${c.id}', event)">✕</button>
+              <div class="nao-enviar-dropdown" id="nedrop_${c.id}">
+                <div class="nao-enviar-option" onclick="marcarNaoEnviar('${c.id}', 'Campanha Nova', event)">Campanha Nova</div>
+                <div class="nao-enviar-option" onclick="marcarNaoEnviar('${c.id}', 'Campanha parada', event)">Campanha Parada</div>
+              </div>
+            </div>` : ''}
+          </div>
         </div>
       `;
     });
 
     html += `</div></div>`;
   });
+
+  // Função helper para renderizar grupo simples (sem checkbox, sem métricas)
+  function renderGrupoSimples(nomeGrupo, itens, cls, safePrefix, labelStatus) {
+    const safeKey = safePrefix + nomeGrupo.replace(/\s/g,'_');
+    const aberto = gruposAbertos[safeKey] !== false;
+    let h = `
+      <div class="grupo-accordion">
+        <div class="grupo-header ${cls} ${aberto ? '' : 'collapsed'}" id="gheader_${safeKey}" onclick="toggleGrupo('${safeKey}')">
+          <span class="grupo-arrow ${aberto ? 'open' : ''}" id="garrow_${safeKey}">▶</span>
+          <span class="grupo-nome">${nomeGrupo}</span>
+          <span class="grupo-count">${itens.length} cliente${itens.length !== 1 ? 's' : ''}</span>
+        </div>
+        <div class="grupo-body ${aberto ? '' : 'collapsed'}" id="gbody_${safeKey}">
+    `;
+    itens.forEach(c => {
+      h += `
+        <div class="client-card enviado">
+          <div></div>
+          <div><div class="client-name-txt">${c.nome}</div></div>
+          <div class="ads-id">${c.adsId || '—'}</div>
+          <div>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <button class="send-btn" style="font-size:11px;padding:3px 8px;" onclick="desfazerNaoEnviar('${c.id}')">Desfazer</button>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+    h += `</div></div>`;
+    return h;
+  }
+
+  // Seção Campanha Nova
+  if (campanhaNova.length > 0) {
+    html += `<div class="secao-titulo" style="margin-top:2rem;color:#007eb5;">Campanha Nova <span class="count">${campanhaNova.length} clientes</span></div>`;
+    ordem.filter(g => gruposCampanhaNova[g]).forEach(nomeGrupo => {
+      const { cls, itens } = gruposCampanhaNova[nomeGrupo];
+      html += renderGrupoSimples(nomeGrupo, itens, cls, 'cn_', 'Campanha Nova');
+    });
+  }
+
+  // Seção Campanha Parada
+  if (campanhaParada.length > 0) {
+    html += `<div class="secao-titulo" style="margin-top:1.5rem;color:#cab641;">Campanha Parada <span class="count">${campanhaParada.length} clientes</span></div>`;
+    ordem.filter(g => gruposCampanhaParada[g]).forEach(nomeGrupo => {
+      const { cls, itens } = gruposCampanhaParada[nomeGrupo];
+      html += renderGrupoSimples(nomeGrupo, itens, cls, 'cp_', 'Campanha Parada');
+    });
+  }
 
   // Seção Já Enviados
   if (enviados.length > 0) {
@@ -909,7 +1002,8 @@ async function carregar() {
           adsId: item.column_values.find(c => c.id==='text_mksnmx8j')?.text || '',
           phone: item.column_values.find(c => c.id==='phone_mkxsskj6')?.text || '',
           looker: item.column_values.find(c => c.id==='link5')?.text || '',
-          relatorioEnviado: (item.column_values.find(c => c.id==='status_14__1')?.text || '').toLowerCase().includes('feito'),
+          statusRelatorio: (item.column_values.find(c => c.id==='status_14__1')?.text || ''),
+          relatorioEnviado: (item.column_values.find(c => c.id==='status_14__1')?.text || '') === 'Feito',
           mcc: item.column_values.find(c => c.id==='status_12')?.text || '',
           status: 'pendente', dados: null
         });
@@ -988,6 +1082,68 @@ async function enviarUm(clienteId) {
     c.status = 'erro';
     if (btn) { btn.textContent = '! Erro'; btn.className = 'send-btn error'; }
     log('Erro: ' + c.nome + ' — ' + e.message, 'err');
+  }
+}
+
+function toggleNaoEnviar(id, e) {
+  e.stopPropagation();
+  document.querySelectorAll('.nao-enviar-dropdown').forEach(d => {
+    if (d.id !== 'nedrop_' + id) d.classList.remove('open');
+  });
+  document.getElementById('nedrop_' + id)?.classList.toggle('open');
+}
+
+// Fechar dropdown ao clicar fora
+document.addEventListener('click', () => {
+  document.querySelectorAll('.nao-enviar-dropdown').forEach(d => d.classList.remove('open'));
+});
+
+async function marcarNaoEnviar(clienteId, label, e) {
+  e.stopPropagation();
+  document.getElementById('nedrop_' + clienteId)?.classList.remove('open');
+
+  const c = clientes.find(x => x.id === clienteId);
+  if (!c) return;
+
+  const mondayKey = getConf('mondayKey');
+  if (!mondayKey) { log('Sem Monday API Key', 'err'); return; }
+
+  try {
+    const mutation = `mutation { change_column_value(board_id: ${BOARD_ID}, item_id: ${clienteId}, column_id: "status_14__1", value: "{\"label\": \"${label}\"}") { id } }`;
+    await fetch('https://api.monday.com/v2', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': mondayKey, 'API-Version': '2024-01' },
+      body: JSON.stringify({ query: mutation })
+    });
+    c.statusRelatorio = label;
+    c.relatorioEnviado = false;
+    log(`${c.nome} marcado como "${label}"`, 'ok');
+    renderTudo();
+  } catch(err) {
+    log('Erro ao marcar: ' + err.message, 'err');
+  }
+}
+
+async function desfazerNaoEnviar(clienteId) {
+  const c = clientes.find(x => x.id === clienteId);
+  if (!c) return;
+
+  const mondayKey = getConf('mondayKey');
+  if (!mondayKey) { log('Sem Monday API Key', 'err'); return; }
+
+  try {
+    const mutation = `mutation { change_column_value(board_id: ${BOARD_ID}, item_id: ${clienteId}, column_id: "status_14__1", value: "{\"label\": \"\"}") { id } }`;
+    await fetch('https://api.monday.com/v2', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': mondayKey, 'API-Version': '2024-01' },
+      body: JSON.stringify({ query: mutation })
+    });
+    c.statusRelatorio = '';
+    c.relatorioEnviado = false;
+    log(`${c.nome} voltou para A Enviar`, 'ok');
+    renderTudo();
+  } catch(err) {
+    log('Erro ao desfazer: ' + err.message, 'err');
   }
 }
 

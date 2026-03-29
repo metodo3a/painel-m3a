@@ -302,6 +302,32 @@
   .nao-enviar-option:last-child { border-bottom: none; }
   .nao-enviar-option:hover { background: var(--bg); }
 
+  .empty-state-inicial {
+    text-align: center; padding: 4rem 2rem;
+    color: var(--text-muted); font-size: 14px;
+  }
+  .empty-state-inicial .empty-icon {
+    font-size: 32px; margin-bottom: 1rem; opacity: 0.3;
+  }
+  .empty-state-inicial strong { color: var(--text); }
+
+  .secao-bloco {
+    margin: 2rem 0 0.5rem;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .secao-bloco-linha {
+    flex: 1; height: 1px; background: var(--border);
+  }
+  .secao-bloco-label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--text-muted);
+    white-space: nowrap;
+  }
+  .secao-bloco-count {
+    font-size: 12px; font-weight: 400;
+    color: var(--text-faint); white-space: nowrap;
+  }
+
   .secao-titulo {
     font-size: 12px; font-weight: 600; text-transform: uppercase;
     letter-spacing: 0.06em; color: var(--text-muted);
@@ -427,7 +453,7 @@
   </div>
 
   <div style="margin-bottom:1rem;"><input type="text" id="searchInput" placeholder="🔍  Buscar cliente pelo nome..." oninput="renderTudo()" style="width:100%;font-size:13px;padding:8px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);" /></div>
-  <div id="mainContent"></div>
+  <div id="mainContent"><div class="empty-state-inicial"><div class="empty-icon">↑</div><p>Configure suas credenciais e clique em <strong>Carregar clientes reais</strong></p></div></div>
   <div class="log-area" id="logArea"></div>
 </div>
 
@@ -810,7 +836,7 @@ function renderTudo() {
 
   // Seção A Enviar
   if (pendentes.length > 0) {
-    html += `<div class="secao-titulo">A enviar <span class="count">${pendentes.length} clientes</span></div>`;
+    html += `<div class="secao-bloco"><div class="secao-bloco-linha"></div><span class="secao-bloco-label">A Enviar</span><span class="secao-bloco-count">${pendentes.length} clientes</span><div class="secao-bloco-linha"></div></div>`;
   }
 
   ordem.filter(g => gruposPendentes[g]).forEach(nomeGrupo => {
@@ -918,7 +944,7 @@ function renderTudo() {
 
   // Seção Campanha Nova
   if (campanhaNova.length > 0) {
-    html += `<div class="secao-titulo" style="margin-top:2rem;color:#007eb5;">Campanha Nova <span class="count">${campanhaNova.length} clientes</span></div>`;
+    html += `<div class="secao-bloco" style="margin-top:2.5rem;"><div class="secao-bloco-linha"></div><span class="secao-bloco-label" style="color:#007eb5;">Campanha Nova</span><span class="secao-bloco-count">${campanhaNova.length} clientes</span><div class="secao-bloco-linha"></div></div>`;
     ordem.filter(g => gruposCampanhaNova[g]).forEach(nomeGrupo => {
       const { cls, itens } = gruposCampanhaNova[nomeGrupo];
       html += renderGrupoSimples(nomeGrupo, itens, cls, 'cn_', 'Campanha Nova');
@@ -927,7 +953,7 @@ function renderTudo() {
 
   // Seção Campanha Parada
   if (campanhaParada.length > 0) {
-    html += `<div class="secao-titulo" style="margin-top:1.5rem;color:#cab641;">Campanha Parada <span class="count">${campanhaParada.length} clientes</span></div>`;
+    html += `<div class="secao-bloco" style="margin-top:2.5rem;"><div class="secao-bloco-linha"></div><span class="secao-bloco-label" style="color:#cab641;">Campanha Parada</span><span class="secao-bloco-count">${campanhaParada.length} clientes</span><div class="secao-bloco-linha"></div></div>`;
     ordem.filter(g => gruposCampanhaParada[g]).forEach(nomeGrupo => {
       const { cls, itens } = gruposCampanhaParada[nomeGrupo];
       html += renderGrupoSimples(nomeGrupo, itens, cls, 'cp_', 'Campanha Parada');
@@ -936,7 +962,7 @@ function renderTudo() {
 
   // Seção Já Enviados
   if (enviados.length > 0) {
-    html += `<div class="secao-titulo" style="margin-top:2rem;">Já enviados <span class="count">${enviados.length} clientes</span></div>`;
+    html += `<div class="secao-bloco" style="margin-top:2.5rem;"><div class="secao-bloco-linha"></div><span class="secao-bloco-label">Já Enviados</span><span class="secao-bloco-count">${enviados.length} clientes</span><div class="secao-bloco-linha"></div></div>`;
     ordem.filter(g => gruposEnviados[g]).forEach(nomeGrupo => {
       const { cls, itens } = gruposEnviados[nomeGrupo];
       const safeKey = 'env_' + nomeGrupo.replace(/\s/g,'_');
@@ -1170,8 +1196,6 @@ async function enviarSelecionados() {
 // INIT
 carregarConfig();
 popularSeletorMes();
-clientes = gerarDemoMes(getMesSelecionado());
-renderTudo();
 carregarConfigRefresh();
 </script>
 </body>

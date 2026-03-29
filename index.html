@@ -700,13 +700,18 @@ async function carregar() {
   const query = `{boards(ids:[${BOARD_ID}]){groups(ids:[${groupIds}]){id title items_page(limit:200){items{id name group{id} column_values(ids:["text_mksnmx8j","phone_mkxsskj6","link5"]){id text}}}}}}`;
 
   try {
+    log('Chamando Monday API...', 'info');
     const res = await fetch('https://api.monday.com/v2', {
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':key,'API-Version':'2024-01'},
       body:JSON.stringify({query})
     });
+
+    if (!res.ok) throw new Error('HTTP ' + res.status + ' — ' + res.statusText);
+
     const data = await res.json();
     if (data.errors) throw new Error(data.errors[0].message);
+    if (!data.data) throw new Error('Resposta inesperada da API: ' + JSON.stringify(data));
 
     clientes = [];
     const grupos = data?.data?.boards?.[0]?.groups || [];
@@ -725,11 +730,16 @@ async function carregar() {
       });
     });
 
-    log(`${clientes.length} clientes carregados`, 'ok');
-    document.getElementById('mesBadge').textContent = getMesAnterior();
+    if (clientes.length === 0) {
+      log('Nenhum cliente retornado — verifique os IDs dos grupos', 'err');
+      return;
+    }
+
+    log(`${clientes.length} clientes carregados com sucesso`, 'ok');
     renderTudo();
   } catch(e) {
-    log('Erro: ' + e.message, 'err');
+    log('ERRO: ' + e.message, 'err');
+    log('Verifique se a API Key está correta e tente novamente', 'info');
   }
 }
 

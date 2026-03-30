@@ -410,6 +410,16 @@
             <input type="number" id="taxaMin" value="10" oninput="atualizarLegenda();renderTudo();" />
             <span>%</span>
           </div>
+          <div class="threshold-item">
+            <div class="dot dot-red"></div>
+            <span>Invest. vermelho abaixo de R$</span>
+            <input type="number" id="investRed" value="50" oninput="atualizarLegenda();renderTudo();" />
+          </div>
+          <div class="threshold-item">
+            <div class="dot dot-yellow"></div>
+            <span>Invest. amarelo abaixo de R$</span>
+            <input type="number" id="investYellow" value="200" oninput="atualizarLegenda();renderTudo();" />
+          </div>
         </div>
       </div>
       <div class="btn-row">
@@ -624,7 +634,7 @@ function toggleConfig() {
 }
 
 function salvarConfig() {
-  ['mondayKey','sheetsKey','webhookUrl','sheetId','cplYellow','cplRed','taxaMin'].forEach(id => {
+  ['mondayKey','sheetsKey','webhookUrl','sheetId','cplYellow','cplRed','taxaMin','investRed','investYellow'].forEach(id => {
     const v = document.getElementById(id).value;
     if (v) localStorage.setItem('m3a_' + id, v);
   });
@@ -634,7 +644,7 @@ function salvarConfig() {
 }
 
 function carregarConfig() {
-  ['mondayKey','sheetsKey','webhookUrl','sheetId','cplYellow','cplRed','taxaMin'].forEach(id => {
+  ['mondayKey','sheetsKey','webhookUrl','sheetId','cplYellow','cplRed','taxaMin','investRed','investYellow'].forEach(id => {
     const v = localStorage.getItem('m3a_' + id);
     if (v) document.getElementById(id).value = v;
   });
@@ -748,8 +758,10 @@ function alertTags(dados, status) {
   else if (cpl > cplY) tags.push({ cls:'yellow', txt:`CPL R$${cpl.toFixed(2).replace('.', ',')}` });
   if (taxa < taxaMin && convs > 0) tags.push({ cls:'yellow', txt:`Taxa ${taxa.toFixed(1)}%` });
   const invest = parseNum(dados.investimento);
-  if (invest < 50) tags.push({ cls:'red', txt:`Invest. R$${invest.toFixed(2).replace('.', ',')}` });
-  else if (invest < 200) tags.push({ cls:'yellow', txt:`Invest. R$${invest.toFixed(2).replace('.', ',')}` });
+  const investR = parseFloat(getConf('investRed') || 50);
+  const investY = parseFloat(getConf('investYellow') || 200);
+  if (invest < investR) tags.push({ cls:'red', txt:`Invest. R$${invest.toFixed(2).replace('.', ',')}` });
+  else if (invest < investY) tags.push({ cls:'yellow', txt:`Invest. R$${invest.toFixed(2).replace('.', ',')}` });
   return tags.map(t => `<span class="alert-tag ${t.cls}">${t.txt}</span>`).join('');
 }
 

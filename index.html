@@ -1113,7 +1113,9 @@ function abrirModal(clienteId) {
   clienteEmEspera = clienteId;
   const c = clientes.find(x => x.id === clienteId);
   if (!c) return;
-  document.getElementById('modalNomeCliente').textContent = c.nome;
+  const total = filaEnvio.length;
+  const progresso = total > 1 ? ` (${filaIndex + 1} de ${total})` : '';
+  document.getElementById('modalNomeCliente').textContent = c.nome + progresso;
   document.getElementById('modalResumo').value = '';
   document.getElementById('modalOverlay').classList.add('open');
   setTimeout(() => document.getElementById('modalResumo').focus(), 100);
@@ -1122,14 +1124,16 @@ function abrirModal(clienteId) {
 function fecharModal() {
   document.getElementById('modalOverlay').classList.remove('open');
   clienteEmEspera = null;
+  // Se havia fila e cancelou, limpa tudo
+  if (filaEnvio.length > 0) {
+    filaEnvio = [];
+    filaIndex = 0;
+    document.getElementById('btnEnviar').disabled = false;
+    atualizarBarra();
+  }
 }
 
-async function confirmarEnvio() {
-  const resumo = document.getElementById('modalResumo').value.trim();
-  const idParaEnviar = clienteEmEspera;
-  fecharModal();
-  if (idParaEnviar) await enviarUm(idParaEnviar, resumo);
-}
+
 
 async function enviarUm(clienteId, resumo) {
   const webhookUrl = getConf('webhookUrl');
@@ -1274,15 +1278,45 @@ async function desfazerNaoEnviar(clienteId) {
   }
 }
 
+let filaEnvio = [];
+let filaIndex = 0;
+
 async function enviarSelecionados() {
   const checks = document.querySelectorAll('.client-check:checked');
+  if (checks.length === 0) return;
+
+  // Monta fila com os IDs selecionados
+  filaEnvio = Array.from(checks).map(cb => cb.dataset.id);
+  filaIndex = 0;
+
   document.getElementById('btnEnviar').disabled = true;
-  for (const cb of checks) {
-    await enviarUm(cb.dataset.id);
-    await new Promise(r => setTimeout(r, 600));
+
+  // Abre o modal do primeiro da fila
+  abrirProximoDaFila();
+}
+
+function abrirProximoDaFila() {
+  if (filaIndex >= filaEnvio.length) {
+    // Fila terminou
+    filaEnvio = [];
+    filaIndex = 0;
+    document.getElementById('btnEnviar').disabled = false;
+    atualizarBarra();
+    return;
   }
-  document.getElementById('btnEnviar').disabled = false;
-  atualizarBarra();
+  abrirModal(filaEnvio[filaIndex]);
+}
+
+async function confirmarEnvio() {
+  const resumo = document.getElementById('modalResumo').value.trim();
+  const idParaEnviar = clienteEmEspera;
+  fecharModal();
+  if (idParaEnviar) {
+    await enviarUm(idParaEnviar, resumo);
+    filaIndex++;
+    // Pequena pausa antes de abrir o próximo modal
+    setTimeout(abrirProximoDaFila, 400);
+  }
 }
 
 // INIT

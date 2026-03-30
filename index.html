@@ -1121,11 +1121,11 @@ function abrirModal(clienteId) {
   setTimeout(() => document.getElementById('modalResumo').focus(), 100);
 }
 
-function fecharModal() {
+function fecharModal(cancelar = true) {
   document.getElementById('modalOverlay').classList.remove('open');
   clienteEmEspera = null;
-  // Se havia fila e cancelou, limpa tudo
-  if (filaEnvio.length > 0) {
+  // Só limpa a fila se foi cancelamento manual
+  if (cancelar && filaEnvio.length > 0) {
     filaEnvio = [];
     filaIndex = 0;
     document.getElementById('btnEnviar').disabled = false;
@@ -1216,7 +1216,7 @@ function toggleNaoEnviar(id, e) {
 // Fechar dropdown ao clicar fora
 document.addEventListener('click', (e) => {
   document.querySelectorAll('.nao-enviar-dropdown').forEach(d => d.classList.remove('open'));
-  if (e.target === document.getElementById('modalOverlay')) fecharModal();
+  if (e.target === document.getElementById('modalOverlay')) fecharModal(true);
 });
 
 
@@ -1310,11 +1310,10 @@ function abrirProximoDaFila() {
 async function confirmarEnvio() {
   const resumo = document.getElementById('modalResumo').value.trim();
   const idParaEnviar = clienteEmEspera;
-  fecharModal();
+  fecharModal(false); // false = não cancela a fila
   if (idParaEnviar) {
     await enviarUm(idParaEnviar, resumo);
     filaIndex++;
-    // Pequena pausa antes de abrir o próximo modal
     setTimeout(abrirProximoDaFila, 400);
   }
 }

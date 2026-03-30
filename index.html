@@ -878,6 +878,7 @@ function renderTudo() {
           <div class="client-metrics">
             <span class="metric">Invest. <strong>R$${parseNum(d.investimento).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}</strong></span>
             <span class="metric">Cliques <strong>${Math.round(parseNum(d.cliques)).toLocaleString('pt-BR')}</strong></span>
+            <span class="metric">CPC <strong>R$${parseNum(d.cpcMedio).toFixed(2).replace('.', ',')}</strong></span>
             <span class="metric ${convCls}">Conv. <strong>${d.conversoes||0}</strong></span>
             <span class="metric">Lig. <strong>${d.ligacoes||0}</strong></span>
             <span class="metric ${cplCls}">CPL Real <strong>R$${parseNum(d.cplReal).toFixed(2).replace('.', ',')}</strong></span>

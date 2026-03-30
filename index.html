@@ -350,6 +350,29 @@
   }
   .btn-refresh:hover { background: var(--bg); color: var(--text); }
 
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.35);
+    z-index: 10000; display: flex; align-items: center; justify-content: center;
+    display: none;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-box {
+    background: var(--surface); border-radius: var(--radius);
+    border: 1px solid var(--border); padding: 1.5rem;
+    width: 420px; max-width: 90vw;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  }
+  .modal-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .modal-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 1rem; }
+  .modal-box textarea {
+    width: 100%; height: 90px; font-size: 13px;
+    padding: 8px 10px; border: 1px solid var(--border);
+    border-radius: var(--radius-sm); background: var(--bg);
+    color: var(--text); resize: none; font-family: inherit; line-height: 1.5;
+  }
+  .modal-box textarea:focus { outline: none; border-color: var(--border-strong); }
+  .modal-actions { display: flex; gap: 10px; margin-top: 1rem; justify-content: flex-end; }
+
   @media(max-width:600px){
     .config-grid { grid-template-columns: 1fr; }
     .ads-id { display: none; }
@@ -450,6 +473,19 @@
   <div style="margin-bottom:1rem;"><input type="text" id="searchInput" placeholder="🔍  Buscar cliente pelo nome..." oninput="renderTudo()" style="width:100%;font-size:13px;padding:8px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);" /></div>
   <div id="mainContent"><div class="empty-state-inicial"><div class="empty-icon">↑</div><p>Configure suas credenciais e clique em <strong>Carregar clientes reais</strong></p></div></div>
   <div class="log-area" id="logArea"></div>
+</div>
+
+<!-- MODAL CONFIRMAÇÃO ENVIO -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-box">
+    <div class="modal-title" id="modalNomeCliente">Confirmar envio</div>
+    <div class="modal-sub">Adicione um resumo antes de enviar (aparecerá como atualização no Monday)</div>
+    <textarea id="modalResumo" placeholder="Ex: Felipe: Relatório enviado, números bons"></textarea>
+    <div class="modal-actions">
+      <button class="btn" onclick="fecharModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmarEnvio()">Confirmar e Enviar</button>
+    </div>
+  </div>
 </div>
 
 <!-- SEND BAR -->
@@ -900,7 +936,7 @@ function renderTudo() {
           </div>
           <div class="ads-id">${c.adsId || '—'}</div>
           <div style="display:flex;gap:6px;align-items:center;">
-            <button class="send-btn ${sBtnCls}" id="sbtn_${c.id}" onclick="enviarUm('${c.id}')">${sBtnTxt}</button>
+            <button class="send-btn ${sBtnCls}" id="sbtn_${c.id}" onclick="abrirModal('${c.id}')">${sBtnTxt}</button>
             ${sa !== 'no-data' || true ? `
             <div class="nao-enviar-wrap" id="newrap_${c.id}">
               <button class="nao-enviar-btn" onclick="toggleNaoEnviar('${c.id}', event)">✕</button>
@@ -1071,7 +1107,30 @@ async function carregar() {
   }
 }
 
-async function enviarUm(clienteId) {
+let clienteEmEspera = null;
+
+function abrirModal(clienteId) {
+  clienteEmEspera = clienteId;
+  const c = clientes.find(x => x.id === clienteId);
+  if (!c) return;
+  document.getElementById('modalNomeCliente').textContent = c.nome;
+  document.getElementById('modalResumo').value = '';
+  document.getElementById('modalOverlay').classList.add('open');
+  setTimeout(() => document.getElementById('modalResumo').focus(), 100);
+}
+
+function fecharModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  clienteEmEspera = null;
+}
+
+async function confirmarEnvio() {
+  const resumo = document.getElementById('modalResumo').value.trim();
+  fecharModal();
+  if (clienteEmEspera) await enviarUm(clienteEmEspera, resumo);
+}
+
+async function enviarUm(clienteId, resumo) {
   const webhookUrl = getConf('webhookUrl');
   if (!webhookUrl) { log('Informe a URL do webhook do n8n', 'err'); return; }
 
@@ -1100,10 +1159,30 @@ async function enviarUm(clienteId) {
       body:JSON.stringify(payload)
     });
 
-    // Marca como enviado no Monday
+    // Marca no Monday: Relatório = Feito, Status = Feito, e adiciona update
     const mondayKey = getConf('mondayKey');
     if (mondayKey) {
       await mondayUpdateStatus(c.id, 'Feito');
+      // Muda coluna Status para Feito
+      await fetch('https://api.monday.com/v2', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': mondayKey, 'API-Version': '2024-01' },
+        body: JSON.stringify({
+          query: 'mutation ($boardId: ID!, $itemId: ID!, $value: JSON!) { change_column_value(board_id: $boardId, item_id: $itemId, column_id: "status", value: $value) { id } }',
+          variables: { boardId: String(BOARD_ID), itemId: String(c.id), value: JSON.stringify({ label: 'Feito' }) }
+        })
+      });
+      // Adiciona update/comentário no elemento
+      if (resumo) {
+        await fetch('https://api.monday.com/v2', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': mondayKey, 'API-Version': '2024-01' },
+          body: JSON.stringify({
+            query: 'mutation ($itemId: ID!, $body: String!) { create_update(item_id: $itemId, body: $body) { id } }',
+            variables: { itemId: String(c.id), body: resumo }
+          })
+        });
+      }
     }
 
     c.relatorioEnviado = true;
@@ -1130,8 +1209,9 @@ function toggleNaoEnviar(id, e) {
 }
 
 // Fechar dropdown ao clicar fora
-document.addEventListener('click', () => {
+document.addEventListener('click', (e) => {
   document.querySelectorAll('.nao-enviar-dropdown').forEach(d => d.classList.remove('open'));
+  if (e.target === document.getElementById('modalOverlay')) fecharModal();
 });
 
 

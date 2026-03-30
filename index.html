@@ -1126,8 +1126,9 @@ function fecharModal() {
 
 async function confirmarEnvio() {
   const resumo = document.getElementById('modalResumo').value.trim();
+  const idParaEnviar = clienteEmEspera;
   fecharModal();
-  if (clienteEmEspera) await enviarUm(clienteEmEspera, resumo);
+  if (idParaEnviar) await enviarUm(idParaEnviar, resumo);
 }
 
 async function enviarUm(clienteId, resumo) {

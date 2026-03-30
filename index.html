@@ -207,6 +207,19 @@
 
   .ads-id { font-size: 11px; color: var(--text-faint); text-align: right; min-width: 90px; }
 
+  .saldo-info { font-size: 11px; color: var(--text-muted); margin-bottom: 2px; }
+  .saldo-info strong { color: var(--text); font-weight: 500; }
+  .tag-cartao {
+    display: inline-block; font-size: 10px; padding: 1px 7px;
+    border-radius: 20px; font-weight: 500;
+    background: #eeedfe; color: #3c3489;
+  }
+  .tag-verificar {
+    display: inline-block; font-size: 10px; padding: 1px 7px;
+    border-radius: 20px; font-weight: 500;
+    background: var(--red-bg); color: var(--red);
+  }
+
   .send-btn {
     font-size: 12px; padding: 5px 12px; border-radius: var(--radius-sm);
     border: 1px solid var(--border-strong); background: transparent;
@@ -934,7 +947,24 @@ function renderTudo() {
             <div class="client-name-txt">${c.nome}</div>
             ${metricsHtml}
           </div>
-          <div class="ads-id">${c.adsId || '—'}</div>
+          <div style="text-align:right;">
+            ${(() => {
+              const saldo = c.saldoConta;
+              const resp = c.respFaturamento;
+              if (saldo === null || saldo === '') {
+                // Saldo em branco
+                if (resp === 'Cartão Auto') {
+                  return '<span class="tag-cartao">Cartão</span>';
+                } else {
+                  return '<span class="tag-verificar">VERIFICAR</span>';
+                }
+              } else {
+                const val = parseFloat(String(saldo).replace(',','.')) || 0;
+                return '<div class="saldo-info">Saldo <strong>R$' + val.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}) + '</strong></div>';
+              }
+            })()}
+            <div class="ads-id">${c.adsId || '—'}</div>
+          </div>
           <div style="display:flex;gap:6px;align-items:center;">
             <button class="send-btn ${sBtnCls}" id="sbtn_${c.id}" onclick="abrirModal('${c.id}')">${sBtnTxt}</button>
             ${sa !== 'no-data' || true ? `
@@ -971,7 +1001,24 @@ function renderTudo() {
         <div class="client-card enviado">
           <div></div>
           <div><div class="client-name-txt">${c.nome}</div></div>
-          <div class="ads-id">${c.adsId || '—'}</div>
+          <div style="text-align:right;">
+            ${(() => {
+              const saldo = c.saldoConta;
+              const resp = c.respFaturamento;
+              if (saldo === null || saldo === '') {
+                // Saldo em branco
+                if (resp === 'Cartão Auto') {
+                  return '<span class="tag-cartao">Cartão</span>';
+                } else {
+                  return '<span class="tag-verificar">VERIFICAR</span>';
+                }
+              } else {
+                const val = parseFloat(String(saldo).replace(',','.')) || 0;
+                return '<div class="saldo-info">Saldo <strong>R$' + val.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}) + '</strong></div>';
+              }
+            })()}
+            <div class="ads-id">${c.adsId || '—'}</div>
+          </div>
           <div>
             <div style="display:flex;gap:6px;align-items:center;">
               <button class="send-btn" style="font-size:11px;padding:3px 8px;" onclick="desfazerNaoEnviar('${c.id}')">Desfazer</button>
@@ -1023,7 +1070,24 @@ function renderTudo() {
           <div class="client-card enviado">
             <div></div>
             <div><div class="client-name-txt">${c.nome}</div></div>
+            <div style="text-align:right;">
+            ${(() => {
+              const saldo = c.saldoConta;
+              const resp = c.respFaturamento;
+              if (saldo === null || saldo === '') {
+                // Saldo em branco
+                if (resp === 'Cartão Auto') {
+                  return '<span class="tag-cartao">Cartão</span>';
+                } else {
+                  return '<span class="tag-verificar">VERIFICAR</span>';
+                }
+              } else {
+                const val = parseFloat(String(saldo).replace(',','.')) || 0;
+                return '<div class="saldo-info">Saldo <strong>R$' + val.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}) + '</strong></div>';
+              }
+            })()}
             <div class="ads-id">${c.adsId || '—'}</div>
+          </div>
             <div><button class="send-btn sent" disabled>✓ Enviado</button></div>
           </div>
         `;
@@ -1042,7 +1106,7 @@ async function carregar() {
 
   log('Carregando clientes do Monday...', 'info');
   const groupIds = GRUPOS_CONFIG.map(g => `"${g.id}"`).join(',');
-  const query = `{boards(ids:[${BOARD_ID}]){groups(ids:[${groupIds}]){id title items_page(limit:200){items{id name group{id} column_values(ids:["text_mksnmx8j","telefone_1","dup__of_conversa__1","text_mm12hcha","status_14__1","status_12"]){id text}}}}}}`;
+  const query = `{boards(ids:[${BOARD_ID}]){groups(ids:[${groupIds}]){id title items_page(limit:200){items{id name group{id} column_values(ids:["text_mksnmx8j","telefone_1","dup__of_conversa__1","text_mm12hcha","status_14__1","status_12","numeric_mkspmtr0","color_mkp8frq0"]){id text}}}}}}`;
 
   try {
     log('Chamando Monday API...', 'info');
@@ -1074,6 +1138,8 @@ async function carregar() {
           statusRelatorio: (item.column_values.find(c => c.id==='status_14__1')?.text || ''),
           relatorioEnviado: (item.column_values.find(c => c.id==='status_14__1')?.text || '') === 'Feito',
           mcc: item.column_values.find(c => c.id==='status_12')?.text || '',
+          saldoConta: item.column_values.find(c => c.id==='numeric_mkspmtr0')?.text ?? null,
+          respFaturamento: item.column_values.find(c => c.id==='color_mkp8frq0')?.text || '',
           status: 'pendente', dados: null
         });
       });

@@ -209,6 +209,17 @@
 
   .saldo-info { font-size: 11px; color: var(--text-muted); margin-bottom: 2px; }
   .saldo-info strong { color: var(--text); font-weight: 500; }
+  .chat-link {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--g1-bg); color: var(--g1-text);
+    text-decoration: none; font-size: 13px;
+    border: 1px solid var(--g1-border);
+    transition: background 0.1s;
+    cursor: pointer;
+  }
+  .chat-link:hover { background: var(--g1-border); }
+
   .tag-cartao {
     display: inline-block; font-size: 10px; padding: 1px 7px;
     border-radius: 20px; font-weight: 500;
@@ -966,6 +977,7 @@ function renderTudo() {
             <div class="ads-id">${c.adsId || '—'}</div>
           </div>
           <div style="display:flex;gap:6px;align-items:center;">
+            ${c.conversa ? `<a class="chat-link" href="${c.conversa}" target="_blank" title="Abrir conversa">💬</a>` : ''}
             <button class="send-btn ${sBtnCls}" id="sbtn_${c.id}" onclick="abrirModal('${c.id}')">${sBtnTxt}</button>
             ${sa !== 'no-data' || true ? `
             <div class="nao-enviar-wrap" id="newrap_${c.id}">
@@ -1106,7 +1118,7 @@ async function carregar() {
 
   log('Carregando clientes do Monday...', 'info');
   const groupIds = GRUPOS_CONFIG.map(g => `"${g.id}"`).join(',');
-  const query = `{boards(ids:[${BOARD_ID}]){groups(ids:[${groupIds}]){id title items_page(limit:200){items{id name group{id} column_values(ids:["text_mksnmx8j","telefone_1","dup__of_conversa__1","text_mm12hcha","status_14__1","status_12","numeric_mkspmtr0","color_mkp8frq0"]){id text}}}}}}`;
+  const query = `{boards(ids:[${BOARD_ID}]){groups(ids:[${groupIds}]){id title items_page(limit:200){items{id name group{id} column_values(ids:["text_mksnmx8j","telefone_1","dup__of_conversa__1","text_mm12hcha","status_14__1","status_12","numeric_mkspmtr0","color_mkp8frq0","texto9__1"]){id text}}}}}}`;
 
   try {
     log('Chamando Monday API...', 'info');
@@ -1140,6 +1152,7 @@ async function carregar() {
           mcc: item.column_values.find(c => c.id==='status_12')?.text || '',
           saldoConta: item.column_values.find(c => c.id==='numeric_mkspmtr0')?.text ?? null,
           respFaturamento: item.column_values.find(c => c.id==='color_mkp8frq0')?.text || '',
+          conversa: item.column_values.find(c => c.id==='texto9__1')?.text || '',
           status: 'pendente', dados: null
         });
       });

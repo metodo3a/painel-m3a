@@ -772,14 +772,32 @@ async function carregarPlanilha(sheetId, sheetsKey, mes) {
 
 function parseNum(val) {
   if (!val && val !== 0) return 0;
-  return parseFloat(String(val).replace(',', '.')) || 0;
+  const s = String(val).trim();
+  // Formato "1.300,00" (BR com milhar e decimal)
+  if (s.includes('.') && s.includes(',')) {
+    return parseFloat(s.replace(/\./g, '').replace(',', '.')) || 0;
+  }
+  // Só vírgula — checar se é decimal ou milhar
+  // Se depois da vírgula tiver exatamente 2 dígitos = decimal (ex: "1,30" = 1.30)
+  // Se depois da vírgula tiver 3 dígitos = milhar (ex: "1,300" = 1300)
+  if (s.includes(',')) {
+    const partes = s.split(',');
+    const decimais = partes[1] || '';
+    if (decimais.length === 3) {
+      // Milhar: "1,300" → 1300
+      return parseFloat(s.replace(',', '')) || 0;
+    }
+    // Decimal: "1,30" → 1.30
+    return parseFloat(s.replace(',', '.')) || 0;
+  }
+  return parseFloat(s) || 0;
 }
 
 function calcStatus(dados) {
   if (!dados) return 'no-data';
-  const cpl = parseFloat(dados.cplReal) || 0;
-  const taxa = parseFloat(dados.taxaConversao) || 0;
-  const convs = parseInt(dados.conversoes) || 0;
+  const cpl = parseNum(dados.cplReal);
+  const taxa = parseNum(dados.taxaConversao);
+  const convs = Math.round(parseNum(dados.conversoes));
   const cplY = parseFloat(getConf('cplYellow') || 20);
   const cplR = parseFloat(getConf('cplRed') || 40);
   const taxaMin = parseFloat(getConf('taxaMin') || 10);
@@ -791,9 +809,9 @@ function calcStatus(dados) {
 
 function alertTags(dados, status) {
   if (!dados || status === 'no-data') return '';
-  const cpl = parseFloat(dados.cplReal) || 0;
-  const taxa = parseFloat(dados.taxaConversao) || 0;
-  const convs = parseInt(dados.conversoes) || 0;
+  const cpl = parseNum(dados.cplReal);
+  const taxa = parseNum(dados.taxaConversao);
+  const convs = Math.round(parseNum(dados.conversoes));
   const cplY = parseFloat(getConf('cplYellow') || 20);
   const cplR = parseFloat(getConf('cplRed') || 40);
   const taxaMin = parseFloat(getConf('taxaMin') || 10);
@@ -847,6 +865,15 @@ function atualizarBarra() {
   const btn = document.getElementById('btnEnviar');
   btn.disabled = n === 0;
   btn.textContent = n > 0 ? `Enviar ${n} via n8n` : 'Enviar via n8n';
+}
+
+function renderSaldo(saldo, resp) {
+  if (saldo === null || saldo === undefined || saldo === '') {
+    if (resp === 'Cartão Auto') return '<span class="tag-cartao">Cartão</span>';
+    return '<span class="tag-verificar">VERIFICAR</span>';
+  }
+  const val = parseNum(saldo);
+  return '<div class="saldo-info">Saldo <strong>R$' + val.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}) + '</strong></div>';
 }
 
 function renderTudo() {
@@ -959,21 +986,7 @@ function renderTudo() {
             ${metricsHtml}
           </div>
           <div style="text-align:right;">
-            ${(() => {
-              const saldo = c.saldoConta;
-              const resp = c.respFaturamento;
-              if (saldo === null || saldo === '') {
-                // Saldo em branco
-                if (resp === 'Cartão Auto') {
-                  return '<span class="tag-cartao">Cartão</span>';
-                } else {
-                  return '<span class="tag-verificar">VERIFICAR</span>';
-                }
-              } else {
-                const val = parseFloat(String(saldo).replace(',','.')) || 0;
-                return '<div class="saldo-info">Saldo <strong>R$' + val.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}) + '</strong></div>';
-              }
-            })()}
+            ${renderSaldo(c.saldoConta, c.respFaturamento)}
             <div class="ads-id">${c.adsId || '—'}</div>
           </div>
           <div style="display:flex;gap:6px;align-items:center;">
@@ -1014,21 +1027,7 @@ function renderTudo() {
           <div></div>
           <div><div class="client-name-txt">${c.nome}</div></div>
           <div style="text-align:right;">
-            ${(() => {
-              const saldo = c.saldoConta;
-              const resp = c.respFaturamento;
-              if (saldo === null || saldo === '') {
-                // Saldo em branco
-                if (resp === 'Cartão Auto') {
-                  return '<span class="tag-cartao">Cartão</span>';
-                } else {
-                  return '<span class="tag-verificar">VERIFICAR</span>';
-                }
-              } else {
-                const val = parseFloat(String(saldo).replace(',','.')) || 0;
-                return '<div class="saldo-info">Saldo <strong>R$' + val.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}) + '</strong></div>';
-              }
-            })()}
+            ${renderSaldo(c.saldoConta, c.respFaturamento)}
             <div class="ads-id">${c.adsId || '—'}</div>
           </div>
           <div>
@@ -1083,21 +1082,7 @@ function renderTudo() {
             <div></div>
             <div><div class="client-name-txt">${c.nome}</div></div>
             <div style="text-align:right;">
-            ${(() => {
-              const saldo = c.saldoConta;
-              const resp = c.respFaturamento;
-              if (saldo === null || saldo === '') {
-                // Saldo em branco
-                if (resp === 'Cartão Auto') {
-                  return '<span class="tag-cartao">Cartão</span>';
-                } else {
-                  return '<span class="tag-verificar">VERIFICAR</span>';
-                }
-              } else {
-                const val = parseFloat(String(saldo).replace(',','.')) || 0;
-                return '<div class="saldo-info">Saldo <strong>R$' + val.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}) + '</strong></div>';
-              }
-            })()}
+            ${renderSaldo(c.saldoConta, c.respFaturamento)}
             <div class="ads-id">${c.adsId || '—'}</div>
           </div>
             <div><button class="send-btn sent" disabled>✓ Enviado</button></div>

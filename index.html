@@ -220,6 +220,13 @@
   }
   .chat-link:hover { background: var(--g1-border); }
 
+  .tag-inadimplente {
+    display: inline-block; font-size: 10px; padding: 1px 7px;
+    border-radius: 20px; font-weight: 700;
+    background: #333333; color: #ffffff;
+    letter-spacing: 0.03em;
+  }
+
   .tag-cartao {
     display: inline-block; font-size: 10px; padding: 1px 7px;
     border-radius: 20px; font-weight: 500;
@@ -981,7 +988,10 @@ function renderTudo() {
         <div class="client-card ${sa}">
           <div><input type="checkbox" class="client-check" data-id="${c.id}" onchange="atualizarBarra()" /></div>
           <div>
-            <div class="client-name-txt">${c.nome}</div>
+            <div class="client-name-txt">
+              ${c.nome}
+              ${c.inadimplente ? '<span class="tag-inadimplente">INADIMPLENTE</span>' : ''}
+            </div>
             ${metricsHtml}
           </div>
           <div style="text-align:right;">
@@ -1102,7 +1112,7 @@ async function carregar() {
 
   log('Carregando clientes do Monday...', 'info');
   const groupIds = GRUPOS_CONFIG.map(g => `"${g.id}"`).join(',');
-  const query = `{boards(ids:[${BOARD_ID}]){groups(ids:[${groupIds}]){id title items_page(limit:200){items{id name group{id} column_values(ids:["text_mksnmx8j","telefone_1","dup__of_conversa__1","text_mm12hcha","status_14__1","status_12","numeric_mkspmtr0","color_mkp8frq0","texto9__1"]){id text}}}}}}`;
+  const query = `{boards(ids:[${BOARD_ID}]){groups(ids:[${groupIds}]){id title items_page(limit:200){items{id name group{id} column_values(ids:["text_mksnmx8j","telefone_1","dup__of_conversa__1","text_mm12hcha","status_14__1","status_12","numeric_mkspmtr0","color_mkp8frq0","texto9__1","status_1"]){id text}}}}}}`;
 
   try {
     log('Chamando Monday API...', 'info');
@@ -1137,6 +1147,7 @@ async function carregar() {
           saldoConta: item.column_values.find(c => c.id==='numeric_mkspmtr0')?.text ?? null,
           respFaturamento: item.column_values.find(c => c.id==='color_mkp8frq0')?.text || '',
           conversa: item.column_values.find(c => c.id==='texto9__1')?.text || '',
+          inadimplente: (item.column_values.find(c => c.id==='status_1')?.text || '') === 'INADIMPLENTE',
           status: 'pendente', dados: null
         });
       });
